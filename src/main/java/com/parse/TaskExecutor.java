@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -430,14 +431,22 @@ public class TaskExecutor {
 	 */
 	public static void main(String[] args) {
 
-		if (args.length != 1) {
+		if (args.length != 2) {
 			System.out.println("Invalid arguments!");
 			System.exit(1);
 		}
 
+		if (!Files.exists(Paths.get(args[0]))) {
+			try {
+				Files.createDirectories(Paths.get(args[0]));
+			} catch (IOException ioException) {
+				System.out.println("Error creating the output directory.");
+			}
+		}
+
 		Formatter formatter = new Formatter(JavaFormatterOptions.builder().style(Style.GOOGLE).build());
 		try {
-			String formattedJava = CodeFormatter.format(Paths.get(args[0]));
+			String formattedJava = CodeFormatter.format(Paths.get(args[1]));
 			List<String> updatedLines = process(Arrays.asList(formattedJava.split("\n")));
 
 			// Saving the updated code
@@ -446,7 +455,8 @@ public class TaskExecutor {
 				codeBuilder.append(line);
 			}
 			String formattedUpdatedCode = formatter.formatSource(codeBuilder.toString());
-			saveUpdatedCode(formattedUpdatedCode, args[0].substring(args[0].lastIndexOf(File.separator) + 1));
+			saveUpdatedCode(formattedUpdatedCode,
+					args[0] + File.separator + args[1].substring(args[1].lastIndexOf(File.separator) + 1));
 		} catch (FormatterException formatterException) {
 			System.out.println("Error formatting the code.");
 		}
