@@ -174,21 +174,20 @@ public class TaskExecutor {
 	}
 
 	/**
-	 * Processes the if-elseif-else statements
+	 * Processes the if statement
 	 * 
-	 * @param lines        The actual lines
-	 * @param updatedLines The updated lines
-	 * @param startPos     The if-else start position
-	 * @param totalLines   Total lines in its parent snippet
-	 * @return The end position of if-else statements
+	 * @param lines
+	 * @param updatedLines
+	 * @param startPos
+	 * @param totalLines
+	 * @return
 	 */
-	private static int processIfElseifElse(List<String> lines, List<String> updatedLines, int startPos,
-			int totalLines) {
+	private static int processIf(List<String> lines, List<String> updatedLines, int startPos, int totalLines,
+			Integer pos) {
 
 		String spaces = IndentSpaceParser.getIndentSpaces(lines.get(startPos));
 		int indentedSpaceCount = IndentSpaceParser.getIndentSpacesCount(lines.get(startPos));
 		PredicateInfo predicateInfo = PredicateParser.processIfStatement(lines.get(startPos));
-		int pos = updatedLines.size();
 
 		if (predicateInfo != null) {
 			PredicateRecorder.record(predicateInfo.getReuseStatement());
@@ -226,54 +225,155 @@ public class TaskExecutor {
 			updatedLines.add(spaces + "}");
 		}
 
-		// Parsing the else-if statements, if present
-		if (bodyLineCounter + 1 < totalLines) {
-			String line = lines.get(bodyLineCounter + 1).trim();
-			while (bodyLineCounter + 1 < totalLines
-					&& (line.startsWith(Keywords.ELSE_IF_I) || line.startsWith(Keywords.ELSE_IF_II))) {
+		return bodyLineCounter;
+	}
 
-				bodyLineCounter++;
-				spaces = IndentSpaceParser.getIndentSpaces(lines.get(bodyLineCounter));
-				indentedSpaceCount = IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter));
-				predicateInfo = PredicateParser.processElseIfStatement(lines.get(bodyLineCounter));
+	/**
+	 * Processes the else-if statements
+	 * 
+	 * @param lines
+	 * @param updatedLines
+	 * @param startPos
+	 * @param totalLines
+	 * @param pos
+	 * @param bodyLineCounter
+	 * @return
+	 */
+	private static int processElseIf(List<String> lines, List<String> updatedLines, int startPos, int totalLines,
+			Integer pos, int bodyLineCounter) {
 
-				if (predicateInfo != null) {
-					PredicateRecorder.record(predicateInfo.getReuseStatement());
-					updatedLines.add(pos++, spaces + predicateInfo.getInitializationStatement());
-					updatedLines.add(spaces + predicateInfo.getParentStatement());
-				}
+		String line = lines.get(bodyLineCounter + 1).trim();
+		while (bodyLineCounter + 1 < totalLines
+				&& (line.startsWith(Keywords.ELSE_IF_I) || line.startsWith(Keywords.ELSE_IF_II))) {
 
-				innerBodyLines = new ArrayList<>();
-				bodyLineCounter++;
-				while (bodyLineCounter < totalLines) {
-					line = lines.get(bodyLineCounter);
-					if (StringUtils.isNotBlank(line.trim())) {
-						if (IndentSpaceParser.getIndentSpacesCount(line) > indentedSpaceCount) {
-							innerBodyLines.add(line);
-						} else {
-							break;
-						}
-					}
-					bodyLineCounter++;
-				}
+			bodyLineCounter++;
+			String spaces = IndentSpaceParser.getIndentSpaces(lines.get(bodyLineCounter));
+			int indentedSpaceCount = IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter));
+			PredicateInfo predicateInfo = PredicateParser.processElseIfStatement(lines.get(bodyLineCounter));
 
-				updatedLines.addAll(process(innerBodyLines));
+			if (predicateInfo != null) {
+				PredicateRecorder.record(predicateInfo.getReuseStatement());
+				updatedLines.add(pos++, spaces + predicateInfo.getInitializationStatement());
+				updatedLines.add(spaces + predicateInfo.getParentStatement());
+			}
 
-				if (bodyLineCounter < totalLines
-						&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) == indentedSpaceCount) {
-					line = lines.get(bodyLineCounter).trim();
-					if (line.equals("}")) {
-						updatedLines.add("}");
-						return bodyLineCounter;
+			List<String> innerBodyLines = new ArrayList<>();
+			bodyLineCounter++;
+			while (bodyLineCounter < totalLines) {
+				line = lines.get(bodyLineCounter);
+				if (StringUtils.isNotBlank(line.trim())) {
+					if (IndentSpaceParser.getIndentSpacesCount(line) > indentedSpaceCount) {
+						innerBodyLines.add(line);
 					} else {
-						bodyLineCounter--;
-						updatedLines.add("}");
+						break;
 					}
+				}
+				bodyLineCounter++;
+			}
+
+			updatedLines.addAll(process(innerBodyLines));
+
+			if (bodyLineCounter < totalLines
+					&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) == indentedSpaceCount) {
+				line = lines.get(bodyLineCounter).trim();
+				if (line.equals("}")) {
+					updatedLines.add("}");
+					return bodyLineCounter;
 				} else {
 					bodyLineCounter--;
-					updatedLines.add(spaces + "}");
+					updatedLines.add("}");
 				}
+			} else {
+				bodyLineCounter--;
+				updatedLines.add(spaces + "}");
 			}
+		}
+
+		return bodyLineCounter;
+	}
+
+	/**
+	 * Processes else statement
+	 * 
+	 * @param lines
+	 * @param updatedLines
+	 * @param startPos
+	 * @param totalLines
+	 * @param pos
+	 * @param bodyLineCounter
+	 * @return
+	 */
+	private static int processElse(List<String> lines, List<String> updatedLines, int startPos, int totalLines,
+			Integer pos, int bodyLineCounter) {
+
+		String line = lines.get(bodyLineCounter + 1).trim();
+		if (bodyLineCounter + 1 < totalLines
+				&& (line.startsWith(Keywords.ELSE_I) || line.startsWith(Keywords.ELSE_II))) {
+
+			bodyLineCounter++;
+			String spaces = IndentSpaceParser.getIndentSpaces(lines.get(bodyLineCounter));
+			int indentedSpaceCount = IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter));
+			updatedLines.add("else {");
+			bodyLineCounter++;
+
+			List<String> innerBodyLines = new ArrayList<>();
+
+			while (bodyLineCounter < totalLines) {
+				line = lines.get(bodyLineCounter);
+				if (StringUtils.isNotBlank(line.trim())) {
+					if (IndentSpaceParser.getIndentSpacesCount(line) > indentedSpaceCount) {
+						innerBodyLines.add(line);
+					} else {
+						break;
+					}
+				}
+				bodyLineCounter++;
+			}
+
+			updatedLines.addAll(process(innerBodyLines));
+
+			if (bodyLineCounter < totalLines
+					&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) == indentedSpaceCount) {
+				line = lines.get(bodyLineCounter).trim();
+				if (line.equals("}")) {
+					updatedLines.add("}");
+					return bodyLineCounter;
+				} else {
+					bodyLineCounter--;
+					updatedLines.add("}");
+				}
+			} else {
+				bodyLineCounter--;
+				updatedLines.add(spaces + "}");
+			}
+		}
+
+		return bodyLineCounter;
+	}
+
+	/**
+	 * Processes the if-elseif-else statements
+	 * 
+	 * @param lines        The actual lines
+	 * @param updatedLines The updated lines
+	 * @param startPos     The if-else start position
+	 * @param totalLines   Total lines in its parent snippet
+	 * @return The end position of if-else statements
+	 */
+	private static int processIfElseifElse(List<String> lines, List<String> updatedLines, int startPos,
+			int totalLines) {
+
+		Integer pos = updatedLines.size();
+		int bodyLineCounter = processIf(lines, updatedLines, startPos, totalLines, pos);
+
+		// Parsing the else-if statements, if present
+		if (bodyLineCounter + 1 < totalLines) {
+			bodyLineCounter = processElseIf(lines, updatedLines, startPos, totalLines, pos, bodyLineCounter);
+		}
+
+		// Parsing the else condition
+		if (bodyLineCounter + 1 < totalLines) {
+			bodyLineCounter = processElse(lines, updatedLines, startPos, totalLines, pos, bodyLineCounter);
 		}
 
 		return bodyLineCounter;

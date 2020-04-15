@@ -7,26 +7,15 @@ public class Test {
 		int a = 10;
 		if (a < 10)
 			System.out.println("if");
-		else if (a < 20) 
+		else if (a < 20)
 			System.out.println("else if");
-		else if (a < 20) 
+		else if (a < 20)
 			System.out.println("else if");
-		else if (a < 20) 
-			System.out.println("else if");
-		else if (a < 20) 
-			System.out.println("else if");
-		else if (a < 20) 
-			System.out.println("else if");
-		else if (a < 20) 
-			System.out.println("else if");
-		System.out.println("else if");
-		System.out.println("else if");
-		System.out.println("else if");
+		else
+			System.out.println("else");
 		
-		
-		if(a<10) {
-	    	System.out.println("yo");
-	    }
-		
+		for(int i=0;i<10;i++)
+			System.out.println("cool");
+
 	}
 }
