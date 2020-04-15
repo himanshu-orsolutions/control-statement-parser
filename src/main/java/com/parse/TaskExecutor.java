@@ -174,7 +174,7 @@ public class TaskExecutor {
 	}
 
 	/**
-	 * Processes the if-else statements
+	 * Processes the if-elseif-else statements
 	 * 
 	 * @param lines        The actual lines
 	 * @param updatedLines The updated lines
@@ -182,15 +182,17 @@ public class TaskExecutor {
 	 * @param totalLines   Total lines in its parent snippet
 	 * @return The end position of if-else statements
 	 */
-	private static int processIfElse(List<String> lines, List<String> updatedLines, int startPos, int totalLines) {
+	private static int processIfElseifElse(List<String> lines, List<String> updatedLines, int startPos,
+			int totalLines) {
 
 		String spaces = IndentSpaceParser.getIndentSpaces(lines.get(startPos));
 		int indentedSpaceCount = IndentSpaceParser.getIndentSpacesCount(lines.get(startPos));
-		PredicateInfo predicateInfo = PredicateParser.processIfElseStatement(lines.get(startPos));
+		PredicateInfo predicateInfo = PredicateParser.processIfStatement(lines.get(startPos));
+		int pos = updatedLines.size();
 
 		if (predicateInfo != null) {
 			PredicateRecorder.record(predicateInfo.getReuseStatement());
-			updatedLines.add(spaces + predicateInfo.getInitializationStatement());
+			updatedLines.add(pos++, spaces + predicateInfo.getInitializationStatement());
 			updatedLines.add(spaces + predicateInfo.getParentStatement());
 		}
 		List<String> innerBodyLines = new ArrayList<>();
@@ -214,13 +216,64 @@ public class TaskExecutor {
 			String line = lines.get(bodyLineCounter).trim();
 			if (line.equals("}")) {
 				updatedLines.add("}");
-			} else if (line.startsWith("}")) {
-				updatedLines.add("}");
+				return bodyLineCounter;
+			} else {
 				bodyLineCounter--;
+				updatedLines.add("}");
 			}
 		} else {
 			bodyLineCounter--;
 			updatedLines.add(spaces + "}");
+		}
+
+		// Parsing the else-if statements, if present
+		if (bodyLineCounter + 1 < totalLines) {
+			String line = lines.get(bodyLineCounter + 1).trim();
+			while (bodyLineCounter + 1 < totalLines
+					&& (line.startsWith(Keywords.ELSE_IF_I) || line.startsWith(Keywords.ELSE_IF_II))) {
+
+				bodyLineCounter++;
+				spaces = IndentSpaceParser.getIndentSpaces(lines.get(bodyLineCounter));
+				indentedSpaceCount = IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter));
+				predicateInfo = PredicateParser.processElseIfStatement(lines.get(bodyLineCounter));
+
+				if (predicateInfo != null) {
+					PredicateRecorder.record(predicateInfo.getReuseStatement());
+					updatedLines.add(pos++, spaces + predicateInfo.getInitializationStatement());
+					updatedLines.add(spaces + predicateInfo.getParentStatement());
+				}
+
+				innerBodyLines = new ArrayList<>();
+				bodyLineCounter++;
+				while (bodyLineCounter < totalLines) {
+					line = lines.get(bodyLineCounter);
+					if (StringUtils.isNotBlank(line.trim())) {
+						if (IndentSpaceParser.getIndentSpacesCount(line) > indentedSpaceCount) {
+							innerBodyLines.add(line);
+						} else {
+							break;
+						}
+					}
+					bodyLineCounter++;
+				}
+
+				updatedLines.addAll(process(innerBodyLines));
+
+				if (bodyLineCounter < totalLines
+						&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) == indentedSpaceCount) {
+					line = lines.get(bodyLineCounter).trim();
+					if (line.equals("}")) {
+						updatedLines.add("}");
+						return bodyLineCounter;
+					} else {
+						bodyLineCounter--;
+						updatedLines.add("}");
+					}
+				} else {
+					bodyLineCounter--;
+					updatedLines.add(spaces + "}");
+				}
+			}
 		}
 
 		return bodyLineCounter;
@@ -245,7 +298,7 @@ public class TaskExecutor {
 			} else if (lines.get(i).trim().startsWith(Keywords.DO)) {
 				i = processDoWhileLoop(lines, updatedLines, i, totalLines);
 			} else if (lines.get(i).trim().startsWith(Keywords.IF)) {
-				i = processIfElse(lines, updatedLines, i, totalLines);
+				i = processIfElseifElse(lines, updatedLines, i, totalLines);
 			} else {
 				updatedLines.add(lines.get(i));
 			}
