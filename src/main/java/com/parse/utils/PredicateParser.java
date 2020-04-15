@@ -59,11 +59,14 @@ public class PredicateParser {
 		Matcher matcher = FOR_PATTERN.matcher(statement);
 		if (matcher.find()) {
 			String control = matcher.group(2).trim();
+			if (StringUtils.isBlank(control)) {
+				control = "true";
+			}
 			String predicateName = "P_" + predicateCounter.getAndIncrement();
 			return new PredicateInfo(predicateName, StringUtils.join("boolean", " ", predicateName, "=", control, ";"),
 					StringUtils.join(predicateName, "=", control, ";"),
 					StringUtils.join("while(", predicateName, ")", "{"), matcher.group(1) + ";",
-					matcher.group(3) + ";");
+					matcher.group(3).replaceAll(",", ";") + ";");
 		}
 		return null;
 	}

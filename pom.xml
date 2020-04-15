@@ -11,6 +11,13 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 	</properties>
 
+	<repositories>
+		<repository>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
+		</repository>
+	</repositories>
+	
 	<dependencies>
 		<dependency>
 			<groupId>com.google.googlejavaformat</groupId>
@@ -32,6 +39,10 @@
 			<version>1.5rc3</version>
 		</dependency>
 
-
+		<dependency>
+			<groupId>com.github.ertugrulcetin</groupId>
+			<artifactId>CommentRemover</artifactId>
+			<version>1.2</version>
+		</dependency>
 	</dependencies>
 </project>

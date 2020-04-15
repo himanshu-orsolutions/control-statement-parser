@@ -1,11 +1,38 @@
 package com.parse.samples;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class Test {
 
 	public static void main(String[] args) {
-		for (int i = 0; i < 10; i++)
-			for (int j = 0; j < i; j++)
-				for (int k = 0; k < j; k++)
-					System.out.println(String.format("Value of i=%d \n value of j=%d", i, j));
+
+		if (StringUtils.equalsAny("adasdasdasdasdasd", "adasdasdasdasdasd", "adasdasdasdasdasd", "adasdasdasdasdasd", // perform
+																														// addition
+																														// block-wise,
+																														// to
+																														// ensure
+																														// good
+																														// cache
+																														// behavior
+				"adasdasdasdasdasd", "adasdasdasdasdasd", "adasdasdasdasdasd", "adasdasdasdasdasd", "adasdasdasdasdasd",
+				"adasdasdasdasdasd", "adasdasdasdasdasd", "adasdasdasdasdasd", "adasdasdasdasdasd", "adasdasdasdasdasd",
+				"adasdasdasdasdasd", "adasdasdasdasdasd", "adasdasdasdasdasd", "adasdasdasdasdasd", "adasdasdasdasdasd",
+				"adasdasdasdasdasd")) {
+			System.out.println("cool");
+		} else if (StringUtils.equalsAny("adasdasdasdasdasd", "adasdasdasdasdasd", "adasdasdasdasdasd",
+				"adasdasdasdasdasd", // perform
+				// addition
+				// block-wise,
+				// to
+				// ensure
+				// good
+				// cache
+				// behavior
+				"adasdasdasdasdasd", "adasdasdasdasdasd", "adasdasdasdasdasd", "adasdasdasdasdasd", "adasdasdasdasdasd",
+				"adasdasdasdasdasd", "adasdasdasdasdasd", "adasdasdasdasdasd", "adasdasdasdasdasd", "adasdasdasdasdasd",
+				"adasdasdasdasdasd", "adasdasdasdasdasd", "adasdasdasdasdasd", "adasdasdasdasdasd", "adasdasdasdasdasd",
+				"adasdasdasdasdasd")) {
+			System.out.println("cool");
+		}
 	}
 }

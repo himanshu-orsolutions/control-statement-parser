@@ -28,6 +28,8 @@ import com.parse.utils.PredicateRecorder;
  */
 public class TaskExecutor {
 
+	private static Formatter formatter = new Formatter(JavaFormatterOptions.builder().style(Style.GOOGLE).build());
+
 	/**
 	 * Processes the for loop
 	 * 
@@ -39,18 +41,33 @@ public class TaskExecutor {
 	 */
 	private static int processForLoop(List<String> lines, List<String> updatedLines, int startPos, int totalLines) {
 
+		// Getting the current indentation of for statement
 		String spaces = IndentSpaceParser.getIndentSpaces(lines.get(startPos));
 		int indentedSpaceCount = IndentSpaceParser.getIndentSpacesCount(lines.get(startPos));
-		PredicateInfo predicateInfo = PredicateParser.processForStatement(lines.get(startPos));
+
+		// The statement might be present in multiple lines, thus merging all
+		StringBuilder statementBuilder = new StringBuilder();
+		statementBuilder.append(removeComment(lines.get(startPos)));
+		startPos++;
+
+		while (IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4) {
+			statementBuilder.append(removeComment(lines.get(startPos)));
+			startPos++;
+		}
+
+		PredicateInfo predicateInfo = PredicateParser.processForStatement(statementBuilder.toString());
 
 		if (predicateInfo != null) {
 			PredicateRecorder.record(predicateInfo.getReuseStatement());
 			updatedLines.add(spaces + predicateInfo.getVarInitializationStatement());
 			updatedLines.add(spaces + predicateInfo.getInitializationStatement());
 			updatedLines.add(spaces + predicateInfo.getParentStatement());
+		} else {
+			updatedLines.add(spaces + statementBuilder.toString());
+			return startPos - 1;
 		}
 		List<String> innerBodyLines = new ArrayList<>();
-		int bodyLineCounter = startPos + 1;
+		int bodyLineCounter = startPos;
 		while (bodyLineCounter < totalLines) {
 			String line = lines.get(bodyLineCounter);
 			if (StringUtils.isNotBlank(line.trim())) {
@@ -92,9 +109,21 @@ public class TaskExecutor {
 	 */
 	private static int processWhileLoop(List<String> lines, List<String> updatedLines, int startPos, int totalLines) {
 
+		// Getting the current indentation of for statement
 		String spaces = IndentSpaceParser.getIndentSpaces(lines.get(startPos));
 		int indentedSpaceCount = IndentSpaceParser.getIndentSpacesCount(lines.get(startPos));
-		PredicateInfo predicateInfo = PredicateParser.processWhileStatement(lines.get(startPos));
+
+		// The statement might be present in multiple lines, thus merging all
+		StringBuilder statementBuilder = new StringBuilder();
+		statementBuilder.append(removeComment(lines.get(startPos)));
+		startPos++;
+
+		while (IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4) {
+			statementBuilder.append(removeComment(lines.get(startPos)));
+			startPos++;
+		}
+
+		PredicateInfo predicateInfo = PredicateParser.processWhileStatement(statementBuilder.toString());
 
 		if (predicateInfo != null) {
 			PredicateRecorder.record(predicateInfo.getReuseStatement());
@@ -102,7 +131,7 @@ public class TaskExecutor {
 			updatedLines.add(spaces + predicateInfo.getParentStatement());
 		}
 		List<String> innerBodyLines = new ArrayList<>();
-		int bodyLineCounter = startPos + 1;
+		int bodyLineCounter = startPos;
 		while (bodyLineCounter < totalLines) {
 			String line = lines.get(bodyLineCounter);
 			if (StringUtils.isNotBlank(line.trim())) {
@@ -164,14 +193,39 @@ public class TaskExecutor {
 
 		updatedLines.addAll(process(innerBodyLines));
 
-		PredicateInfo predicateInfo = PredicateParser.processDoWhileStatement(lines.get(bodyLineCounter));
+		// The statement might be present in multiple lines, thus merging all
+		StringBuilder statementBuilder = new StringBuilder();
+		statementBuilder.append(removeComment(lines.get(bodyLineCounter)));
+		bodyLineCounter++;
+
+		while (IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) > indentedSpaceCount + 4) {
+			statementBuilder.append(removeComment(lines.get(bodyLineCounter)));
+			bodyLineCounter++;
+		}
+
+		PredicateInfo predicateInfo = PredicateParser.processDoWhileStatement(statementBuilder.toString());
 		if (predicateInfo != null) {
 			PredicateRecorder.record(predicateInfo.getReuseStatement());
 			updatedLines.add(spaces + "\t" + predicateInfo.getReuseStatement());
 			updatedLines.add(spaces + predicateInfo.getParentStatement());
 		}
 		updatedLines.add(pos, spaces + predicateInfo.getInitializationStatement());
-		return bodyLineCounter;
+		return bodyLineCounter - 1;
+	}
+
+	/**
+	 * Removes comment from the line of code
+	 * 
+	 * @param line The line
+	 * @return The stripped line
+	 */
+	private static String removeComment(String line) {
+
+		line = line.trim();
+		if (line.contains("//")) {
+			return line.substring(0, line.lastIndexOf("//")).trim();
+		}
+		return line;
 	}
 
 	/**
@@ -186,9 +240,21 @@ public class TaskExecutor {
 	private static int processIf(List<String> lines, List<String> updatedLines, int startPos, int totalLines,
 			Integer pos) {
 
+		// Getting the current indentation of for statement
 		String spaces = IndentSpaceParser.getIndentSpaces(lines.get(startPos));
 		int indentedSpaceCount = IndentSpaceParser.getIndentSpacesCount(lines.get(startPos));
-		PredicateInfo predicateInfo = PredicateParser.processIfStatement(lines.get(startPos));
+
+		// The statement might be present in multiple lines, thus merging all
+		StringBuilder statementBuilder = new StringBuilder();
+		statementBuilder.append(removeComment(lines.get(startPos)));
+		startPos++;
+
+		while (IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4) {
+			statementBuilder.append(removeComment(lines.get(startPos)));
+			startPos++;
+		}
+
+		PredicateInfo predicateInfo = PredicateParser.processIfStatement(statementBuilder.toString());
 
 		if (predicateInfo != null) {
 			PredicateRecorder.record(predicateInfo.getReuseStatement());
@@ -196,7 +262,7 @@ public class TaskExecutor {
 			updatedLines.add(spaces + predicateInfo.getParentStatement());
 		}
 		List<String> innerBodyLines = new ArrayList<>();
-		int bodyLineCounter = startPos + 1;
+		int bodyLineCounter = startPos;
 		while (bodyLineCounter < totalLines) {
 			String line = lines.get(bodyLineCounter);
 			if (StringUtils.isNotBlank(line.trim())) {
@@ -234,23 +300,35 @@ public class TaskExecutor {
 	 * 
 	 * @param lines
 	 * @param updatedLines
-	 * @param startPos
 	 * @param totalLines
 	 * @param pos
 	 * @param bodyLineCounter
 	 * @return
 	 */
-	private static int processElseIf(List<String> lines, List<String> updatedLines, int startPos, int totalLines,
-			Integer pos, int bodyLineCounter) {
+	private static int processElseIf(List<String> lines, List<String> updatedLines, int totalLines, Integer pos,
+			int bodyLineCounter) {
 
 		String line = lines.get(bodyLineCounter + 1).trim();
 		while (bodyLineCounter + 1 < totalLines
 				&& (line.startsWith(Keywords.ELSE_IF_I) || line.startsWith(Keywords.ELSE_IF_II))) {
 
 			bodyLineCounter++;
+
+			// Getting the current indentation of for statement
 			String spaces = IndentSpaceParser.getIndentSpaces(lines.get(bodyLineCounter));
 			int indentedSpaceCount = IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter));
-			PredicateInfo predicateInfo = PredicateParser.processElseIfStatement(lines.get(bodyLineCounter));
+
+			// The statement might be present in multiple lines, thus merging all
+			StringBuilder statementBuilder = new StringBuilder();
+			statementBuilder.append(removeComment(lines.get(bodyLineCounter)));
+			bodyLineCounter++;
+
+			while (IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) > indentedSpaceCount + 4) {
+				statementBuilder.append(removeComment(lines.get(bodyLineCounter)));
+				bodyLineCounter++;
+			}
+
+			PredicateInfo predicateInfo = PredicateParser.processElseIfStatement(statementBuilder.toString());
 
 			if (predicateInfo != null) {
 				PredicateRecorder.record(predicateInfo.getReuseStatement());
@@ -259,7 +337,6 @@ public class TaskExecutor {
 			}
 
 			List<String> innerBodyLines = new ArrayList<>();
-			bodyLineCounter++;
 			while (bodyLineCounter < totalLines) {
 				line = lines.get(bodyLineCounter);
 				if (StringUtils.isNotBlank(line.trim())) {
@@ -304,8 +381,8 @@ public class TaskExecutor {
 	 * @param bodyLineCounter
 	 * @return
 	 */
-	private static int processElse(List<String> lines, List<String> updatedLines, int startPos, int totalLines,
-			Integer pos, int bodyLineCounter) {
+	private static int processElse(List<String> lines, List<String> updatedLines, int totalLines, Integer pos,
+			int bodyLineCounter) {
 
 		String line = lines.get(bodyLineCounter + 1).trim();
 		if (bodyLineCounter + 1 < totalLines
@@ -369,12 +446,12 @@ public class TaskExecutor {
 
 		// Parsing the else-if statements, if present
 		if (bodyLineCounter + 1 < totalLines) {
-			bodyLineCounter = processElseIf(lines, updatedLines, startPos, totalLines, pos, bodyLineCounter);
+			bodyLineCounter = processElseIf(lines, updatedLines, totalLines, pos, bodyLineCounter);
 		}
 
 		// Parsing the else condition
 		if (bodyLineCounter + 1 < totalLines) {
-			bodyLineCounter = processElse(lines, updatedLines, startPos, totalLines, pos, bodyLineCounter);
+			bodyLineCounter = processElse(lines, updatedLines, totalLines, pos, bodyLineCounter);
 		}
 
 		return bodyLineCounter;
@@ -444,7 +521,6 @@ public class TaskExecutor {
 			}
 		}
 
-		Formatter formatter = new Formatter(JavaFormatterOptions.builder().style(Style.GOOGLE).build());
 		try {
 			String formattedJava = CodeFormatter.format(Paths.get(args[1]));
 			List<String> updatedLines = process(Arrays.asList(formattedJava.split("\n")));
@@ -453,6 +529,7 @@ public class TaskExecutor {
 			StringBuilder codeBuilder = new StringBuilder();
 			for (String line : updatedLines) {
 				codeBuilder.append(line);
+				codeBuilder.append("\n");
 			}
 			String formattedUpdatedCode = formatter.formatSource(codeBuilder.toString());
 			saveUpdatedCode(formattedUpdatedCode,
