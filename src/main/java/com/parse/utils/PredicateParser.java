@@ -34,6 +34,11 @@ public class PredicateParser {
 	 */
 	private static final Pattern DO_WHILE_PATTERN = Pattern.compile("(\\} while \\()(.*)(\\)\\;)");
 
+	/**
+	 * The if-else statement pattern
+	 */
+	private static final Pattern IF_ELSE_PATTERN = Pattern.compile("(if \\()(.*)(\\))");
+
 	private PredicateParser() {
 		// Its a utility class. Thus instantiation is not allowed.
 	}
@@ -92,6 +97,25 @@ public class PredicateParser {
 			return new PredicateInfo(predicateName, StringUtils.join("boolean", " ", predicateName, ";"),
 					StringUtils.join(predicateName, "=", control, ";"),
 					StringUtils.join(matcher.group(1), predicateName, matcher.group(3)), null, null);
+		}
+		return null;
+	}
+
+	/**
+	 * Processes the 'if' statement
+	 * 
+	 * @param statement The statement
+	 * @return The processed predicate information
+	 */
+	public static PredicateInfo processIfElseStatement(String statement) {
+
+		Matcher matcher = IF_ELSE_PATTERN.matcher(statement);
+		if (matcher.find()) {
+			String control = matcher.group(2).trim();
+			String predicateName = "P_" + predicateCounter.getAndIncrement();
+			return new PredicateInfo(predicateName, StringUtils.join("boolean", " ", predicateName, "=", control, ";"),
+					StringUtils.join(predicateName, "=", control, ";"),
+					StringUtils.join(matcher.group(1), predicateName, matcher.group(3), "{"), null, null);
 		}
 		return null;
 	}

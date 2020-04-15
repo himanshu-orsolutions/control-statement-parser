@@ -11,4 +11,7 @@ public interface Keywords {
 	public static final String WHILE = "while";
 
 	public static final String DO = "do";
+
+	public static final String IF = "if";
+
 }

@@ -174,6 +174,59 @@ public class TaskExecutor {
 	}
 
 	/**
+	 * Processes the if-else statements
+	 * 
+	 * @param lines        The actual lines
+	 * @param updatedLines The updated lines
+	 * @param startPos     The if-else start position
+	 * @param totalLines   Total lines in its parent snippet
+	 * @return The end position of if-else statements
+	 */
+	private static int processIfElse(List<String> lines, List<String> updatedLines, int startPos, int totalLines) {
+
+		String spaces = IndentSpaceParser.getIndentSpaces(lines.get(startPos));
+		int indentedSpaceCount = IndentSpaceParser.getIndentSpacesCount(lines.get(startPos));
+		PredicateInfo predicateInfo = PredicateParser.processIfElseStatement(lines.get(startPos));
+
+		if (predicateInfo != null) {
+			PredicateRecorder.record(predicateInfo.getReuseStatement());
+			updatedLines.add(spaces + predicateInfo.getInitializationStatement());
+			updatedLines.add(spaces + predicateInfo.getParentStatement());
+		}
+		List<String> innerBodyLines = new ArrayList<>();
+		int bodyLineCounter = startPos + 1;
+		while (bodyLineCounter < totalLines) {
+			String line = lines.get(bodyLineCounter);
+			if (StringUtils.isNotBlank(line.trim())) {
+				if (IndentSpaceParser.getIndentSpacesCount(line) > indentedSpaceCount) {
+					innerBodyLines.add(line);
+				} else {
+					break;
+				}
+			}
+			bodyLineCounter++;
+		}
+
+		updatedLines.addAll(process(innerBodyLines));
+
+		if (bodyLineCounter < totalLines
+				&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) == indentedSpaceCount) {
+			String line = lines.get(bodyLineCounter).trim();
+			if (line.equals("}")) {
+				updatedLines.add("}");
+			} else if (line.startsWith("}")) {
+				updatedLines.add("}");
+				bodyLineCounter--;
+			}
+		} else {
+			bodyLineCounter--;
+			updatedLines.add(spaces + "}");
+		}
+
+		return bodyLineCounter;
+	}
+
+	/**
 	 * Processes the lines of code
 	 * 
 	 * @param lines The lines
@@ -191,6 +244,8 @@ public class TaskExecutor {
 				i = processWhileLoop(lines, updatedLines, i, totalLines);
 			} else if (lines.get(i).trim().startsWith(Keywords.DO)) {
 				i = processDoWhileLoop(lines, updatedLines, i, totalLines);
+			} else if (lines.get(i).trim().startsWith(Keywords.IF)) {
+				i = processIfElse(lines, updatedLines, i, totalLines);
 			} else {
 				updatedLines.add(lines.get(i));
 			}
