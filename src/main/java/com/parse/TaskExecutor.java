@@ -68,6 +68,7 @@ public class TaskExecutor {
 		}
 		List<String> innerBodyLines = new ArrayList<>();
 		int bodyLineCounter = startPos;
+		int parentLineNumber = startPos;
 		while (bodyLineCounter < totalLines) {
 			String line = lines.get(bodyLineCounter);
 			if (StringUtils.isNotBlank(line.trim())) {
@@ -80,7 +81,7 @@ public class TaskExecutor {
 			bodyLineCounter++;
 		}
 
-		updatedLines.addAll(process(innerBodyLines));
+		updatedLines.addAll(process(innerBodyLines, parentLineNumber));
 		if (predicateInfo != null) {
 			updatedLines.add(spaces + "\t" + predicateInfo.getVarChangeStatement());
 			updatedLines.add(spaces + "\t" + predicateInfo.getReuseStatement());
@@ -132,6 +133,7 @@ public class TaskExecutor {
 		}
 		List<String> innerBodyLines = new ArrayList<>();
 		int bodyLineCounter = startPos;
+		int parentLineNumber = startPos;
 		while (bodyLineCounter < totalLines) {
 			String line = lines.get(bodyLineCounter);
 			if (StringUtils.isNotBlank(line.trim())) {
@@ -144,7 +146,7 @@ public class TaskExecutor {
 			bodyLineCounter++;
 		}
 
-		updatedLines.addAll(process(innerBodyLines));
+		updatedLines.addAll(process(innerBodyLines, parentLineNumber));
 		if (predicateInfo != null) {
 			updatedLines.add(spaces + "\t" + predicateInfo.getReuseStatement());
 		}
@@ -179,6 +181,7 @@ public class TaskExecutor {
 
 		List<String> innerBodyLines = new ArrayList<>();
 		int bodyLineCounter = startPos + 1;
+		int parentLineNumber = startPos;
 		while (bodyLineCounter < totalLines) {
 			String line = lines.get(bodyLineCounter);
 			if (StringUtils.isNotBlank(line.trim())) {
@@ -191,7 +194,7 @@ public class TaskExecutor {
 			bodyLineCounter++;
 		}
 
-		updatedLines.addAll(process(innerBodyLines));
+		updatedLines.addAll(process(innerBodyLines, parentLineNumber));
 
 		// The statement might be present in multiple lines, thus merging all
 		StringBuilder statementBuilder = new StringBuilder();
@@ -263,6 +266,7 @@ public class TaskExecutor {
 		}
 		List<String> innerBodyLines = new ArrayList<>();
 		int bodyLineCounter = startPos;
+		int parentLineNumber = startPos;
 		while (bodyLineCounter < totalLines) {
 			String line = lines.get(bodyLineCounter);
 			if (StringUtils.isNotBlank(line.trim())) {
@@ -275,7 +279,7 @@ public class TaskExecutor {
 			bodyLineCounter++;
 		}
 
-		updatedLines.addAll(process(innerBodyLines));
+		updatedLines.addAll(process(innerBodyLines, parentLineNumber));
 
 		if (bodyLineCounter < totalLines
 				&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) == indentedSpaceCount) {
@@ -336,6 +340,7 @@ public class TaskExecutor {
 				updatedLines.add(spaces + predicateInfo.getParentStatement());
 			}
 
+			int parentLineNumber = bodyLineCounter;
 			List<String> innerBodyLines = new ArrayList<>();
 			while (bodyLineCounter < totalLines) {
 				line = lines.get(bodyLineCounter);
@@ -349,7 +354,7 @@ public class TaskExecutor {
 				bodyLineCounter++;
 			}
 
-			updatedLines.addAll(process(innerBodyLines));
+			updatedLines.addAll(process(innerBodyLines, parentLineNumber));
 
 			if (bodyLineCounter < totalLines
 					&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) == indentedSpaceCount) {
@@ -391,6 +396,7 @@ public class TaskExecutor {
 			bodyLineCounter++;
 			String spaces = IndentSpaceParser.getIndentSpaces(lines.get(bodyLineCounter));
 			int indentedSpaceCount = IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter));
+			int parentLineNumber = bodyLineCounter;
 			updatedLines.add("else {");
 			bodyLineCounter++;
 
@@ -408,7 +414,7 @@ public class TaskExecutor {
 				bodyLineCounter++;
 			}
 
-			updatedLines.addAll(process(innerBodyLines));
+			updatedLines.addAll(process(innerBodyLines, parentLineNumber));
 
 			if (bodyLineCounter < totalLines
 					&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) == indentedSpaceCount) {
@@ -460,31 +466,39 @@ public class TaskExecutor {
 	/**
 	 * Processes the lines of code
 	 * 
-	 * @param lines The lines
+	 * @param lines            The lines
+	 * @param parentLineNumber The parent moduleline number
 	 * @return The processed lines of code
 	 */
-	private static List<String> process(List<String> lines) {
+	private static List<String> process(List<String> lines, int parentLineNumber) {
 
 		List<String> updatedLines = new ArrayList<>();
 		int totalLines = lines.size();
 
 		for (int i = 0; i < totalLines; i++) {
 			if (lines.get(i).trim().startsWith(Keywords.FOR)) {
-				System.out.println(String.format("Processing of for loop started. Line no: %d", i));
+				System.out.println(String.format("Processing of for loop started. Line no: %d", parentLineNumber + i));
 				i = processForLoop(lines, updatedLines, i, totalLines);
-				System.out.println(String.format("Processing of for loop completed. Line no: %d", i));
+				System.out
+						.println(String.format("Processing of for loop completed. Line no: %d", parentLineNumber + i));
 			} else if (lines.get(i).trim().startsWith(Keywords.WHILE)) {
-				System.out.println(String.format("Processing of while loop started. Line no: %d", i));
+				System.out
+						.println(String.format("Processing of while loop started. Line no: %d", parentLineNumber + i));
 				i = processWhileLoop(lines, updatedLines, i, totalLines);
-				System.out.println(String.format("Processing of while loop completed. Line no: %d", i));
+				System.out.println(
+						String.format("Processing of while loop completed. Line no: %d", parentLineNumber + i));
 			} else if (lines.get(i).trim().startsWith(Keywords.DO)) {
-				System.out.println(String.format("Processing of do-while loop started. Line no: %d", i));
+				System.out.println(
+						String.format("Processing of do-while loop started. Line no: %d", parentLineNumber + i));
 				i = processDoWhileLoop(lines, updatedLines, i, totalLines);
-				System.out.println(String.format("Processing of do-while loop completed. Line no: %d", i));
+				System.out.println(
+						String.format("Processing of do-while loop completed. Line no: %d", parentLineNumber + i));
 			} else if (lines.get(i).trim().startsWith(Keywords.IF)) {
-				System.out.println(String.format("Processing of if statements started. Line no: %d", i));
+				System.out.println(
+						String.format("Processing of if statements started. Line no: %d", parentLineNumber + i));
 				i = processIfElseifElse(lines, updatedLines, i, totalLines);
-				System.out.println(String.format("Processing of if statements completed. Line no: %d", i));
+				System.out.println(
+						String.format("Processing of if statements completed. Line no: %d", parentLineNumber + i));
 			} else {
 				updatedLines.add(lines.get(i));
 			}
@@ -531,7 +545,7 @@ public class TaskExecutor {
 
 		try {
 			String formattedJava = CodeFormatter.format(Paths.get(args[1]));
-			List<String> updatedLines = process(Arrays.asList(formattedJava.split("\n")));
+			List<String> updatedLines = process(Arrays.asList(formattedJava.split("\n")), 0);
 
 			// Saving the updated code
 			StringBuilder codeBuilder = new StringBuilder();
