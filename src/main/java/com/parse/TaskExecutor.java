@@ -470,13 +470,21 @@ public class TaskExecutor {
 
 		for (int i = 0; i < totalLines; i++) {
 			if (lines.get(i).trim().startsWith(Keywords.FOR)) {
+				System.out.println(String.format("Processing of for loop started. Line no: %d", i));
 				i = processForLoop(lines, updatedLines, i, totalLines);
+				System.out.println(String.format("Processing of for loop completed. Line no: %d", i));
 			} else if (lines.get(i).trim().startsWith(Keywords.WHILE)) {
+				System.out.println(String.format("Processing of while loop started. Line no: %d", i));
 				i = processWhileLoop(lines, updatedLines, i, totalLines);
+				System.out.println(String.format("Processing of while loop completed. Line no: %d", i));
 			} else if (lines.get(i).trim().startsWith(Keywords.DO)) {
+				System.out.println(String.format("Processing of do-while loop started. Line no: %d", i));
 				i = processDoWhileLoop(lines, updatedLines, i, totalLines);
+				System.out.println(String.format("Processing of do-while loop completed. Line no: %d", i));
 			} else if (lines.get(i).trim().startsWith(Keywords.IF)) {
+				System.out.println(String.format("Processing of if statements started. Line no: %d", i));
 				i = processIfElseifElse(lines, updatedLines, i, totalLines);
+				System.out.println(String.format("Processing of if statements completed. Line no: %d", i));
 			} else {
 				updatedLines.add(lines.get(i));
 			}
