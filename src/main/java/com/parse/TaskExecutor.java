@@ -376,6 +376,44 @@ public class TaskExecutor {
 	}
 
 	/**
+	 * Processes the ternary assignment if found
+	 * 
+	 * @param lines
+	 * @param updatedLines
+	 * @param startPos
+	 * @param totalLines
+	 * @return
+	 */
+	private static int processTernaryAssignmentIfFound(List<String> lines, List<String> updatedLines, int startPos,
+			int totalLines, boolean isReturnStatement) {
+
+		// Getting the current indentation of for statement
+		int indentedSpaceCount = IndentSpaceParser.getIndentSpacesCount(lines.get(startPos));
+
+		// The statement might be present in multiple lines, thus merging all
+		StringBuilder statementBuilder = new StringBuilder();
+		statementBuilder.append(removeComment(lines.get(startPos)));
+		startPos++;
+
+		while (IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount) {
+			statementBuilder.append(removeComment(lines.get(startPos)));
+			startPos++;
+		}
+
+		PredicateInfo predicateInfo = PredicateParser.processTernaryStatement(statementBuilder.toString(),
+				isReturnStatement);
+		if (predicateInfo != null) {
+			PredicateRecorder.record(predicateInfo.getReuseStatement());
+			updatedLines.add(predicateInfo.getInitializationStatement());
+			updatedLines.add(predicateInfo.getParentStatement());
+		} else {
+			updatedLines.add(statementBuilder.toString());
+		}
+
+		return startPos - 1;
+	}
+
+	/**
 	 * Processes else statement
 	 * 
 	 * @param lines
@@ -499,6 +537,18 @@ public class TaskExecutor {
 				i = processIfElseifElse(lines, updatedLines, i, totalLines);
 				System.out.println(
 						String.format("Processing of if statements completed. Line no: %d", parentLineNumber + i));
+			} else if (lines.get(i).trim().matches("^\\w+ \\w+ \\=.*")) {
+				System.out.println(
+						String.format("Processing of ternary stament started. Line no: %d", parentLineNumber + i));
+				i = processTernaryAssignmentIfFound(lines, updatedLines, i, totalLines, false);
+				System.out.println(
+						String.format("Processing of ternary stament completed. Line no: %d", parentLineNumber + i));
+			} else if (lines.get(i).trim().matches("^return.*")) {
+				System.out.println(
+						String.format("Processing of ternary stament started. Line no: %d", parentLineNumber + i));
+				i = processTernaryAssignmentIfFound(lines, updatedLines, i, totalLines, true);
+				System.out.println(
+						String.format("Processing of ternary stament completed. Line no: %d", parentLineNumber + i));
 			} else {
 				updatedLines.add(lines.get(i));
 			}
