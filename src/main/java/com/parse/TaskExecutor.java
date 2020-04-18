@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -29,6 +30,11 @@ import com.parse.utils.PredicateRecorder;
 public class TaskExecutor {
 
 	private static Formatter formatter = new Formatter(JavaFormatterOptions.builder().style(Style.GOOGLE).build());
+
+	/**
+	 * The list of predicate information
+	 */
+	private static List<PredicateInfo> predicateInfoList;
 
 	/**
 	 * Processes the for loop
@@ -58,7 +64,7 @@ public class TaskExecutor {
 		PredicateInfo predicateInfo = PredicateParser.processForStatement(statementBuilder.toString());
 
 		if (predicateInfo != null) {
-			PredicateRecorder.record(predicateInfo.getReuseStatement());
+			predicateInfoList.add(predicateInfo);
 			updatedLines.add(spaces + predicateInfo.getVarInitializationStatement());
 			updatedLines.add(spaces + predicateInfo.getInitializationStatement());
 			updatedLines.add(spaces + predicateInfo.getParentStatement());
@@ -127,7 +133,7 @@ public class TaskExecutor {
 		PredicateInfo predicateInfo = PredicateParser.processWhileStatement(statementBuilder.toString());
 
 		if (predicateInfo != null) {
-			PredicateRecorder.record(predicateInfo.getReuseStatement());
+			predicateInfoList.add(predicateInfo);
 			updatedLines.add(spaces + predicateInfo.getInitializationStatement());
 			updatedLines.add(spaces + predicateInfo.getParentStatement());
 		}
@@ -208,7 +214,7 @@ public class TaskExecutor {
 
 		PredicateInfo predicateInfo = PredicateParser.processDoWhileStatement(statementBuilder.toString());
 		if (predicateInfo != null) {
-			PredicateRecorder.record(predicateInfo.getReuseStatement());
+			predicateInfoList.add(predicateInfo);
 			updatedLines.add(spaces + "\t" + predicateInfo.getReuseStatement());
 			updatedLines.add(spaces + predicateInfo.getParentStatement());
 		}
@@ -260,7 +266,7 @@ public class TaskExecutor {
 		PredicateInfo predicateInfo = PredicateParser.processIfStatement(statementBuilder.toString());
 
 		if (predicateInfo != null) {
-			PredicateRecorder.record(predicateInfo.getReuseStatement());
+			predicateInfoList.add(predicateInfo);
 			updatedLines.add(pos++, spaces + predicateInfo.getInitializationStatement());
 			updatedLines.add(spaces + predicateInfo.getParentStatement());
 		}
@@ -335,7 +341,7 @@ public class TaskExecutor {
 			PredicateInfo predicateInfo = PredicateParser.processElseIfStatement(statementBuilder.toString());
 
 			if (predicateInfo != null) {
-				PredicateRecorder.record(predicateInfo.getReuseStatement());
+				predicateInfoList.add(predicateInfo);
 				updatedLines.add(pos++, spaces + predicateInfo.getInitializationStatement());
 				updatedLines.add(spaces + predicateInfo.getParentStatement());
 			}
@@ -403,7 +409,7 @@ public class TaskExecutor {
 		PredicateInfo predicateInfo = PredicateParser.processTernaryStatement(statementBuilder.toString(),
 				isReturnStatement);
 		if (predicateInfo != null) {
-			PredicateRecorder.record(predicateInfo.getReuseStatement());
+			predicateInfoList.add(predicateInfo);
 			updatedLines.add(predicateInfo.getInitializationStatement());
 			updatedLines.add(predicateInfo.getParentStatement());
 		} else {
@@ -595,6 +601,7 @@ public class TaskExecutor {
 
 		try {
 			String formattedJava = CodeFormatter.format(Paths.get(args[1]));
+			predicateInfoList = new ArrayList<>();
 			List<String> updatedLines = process(Arrays.asList(formattedJava.split("\n")), 0);
 
 			// Saving the updated code
@@ -606,6 +613,11 @@ public class TaskExecutor {
 			String formattedUpdatedCode = formatter.formatSource(codeBuilder.toString());
 			saveUpdatedCode(formattedUpdatedCode,
 					args[0] + File.separator + args[1].substring(args[1].lastIndexOf(File.separator) + 1));
+
+			// Creating the predicates file
+			PredicateRecorder.create(
+					args[0] + File.separator + args[1].substring(args[1].lastIndexOf(File.separator) + 1),
+					predicateInfoList);
 		} catch (FormatterException formatterException) {
 			System.out.println("Error formatting the code.");
 		}

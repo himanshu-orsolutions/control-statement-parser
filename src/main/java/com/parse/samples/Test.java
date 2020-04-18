@@ -11,5 +11,10 @@ public class Test {
 		String message = "how are you?";
 		String reply = "how are you?".equals(message) ? "I am fine. Thanks :)" : "How are you doing?";
 		System.out.println(reply);
+
+		int i = 0;
+		while (i++ < 10) {
+			System.out.println("Cool");
+		}
 	}
 }

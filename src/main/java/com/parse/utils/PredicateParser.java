@@ -76,7 +76,8 @@ public class PredicateParser {
 				control = "true";
 			}
 			String predicateName = "P_" + predicateCounter.getAndIncrement();
-			return new PredicateInfo(predicateName, StringUtils.join("boolean", " ", predicateName, "=", control, ";"),
+			return new PredicateInfo(predicateName, control, "FOR",
+					StringUtils.join("boolean", " ", predicateName, "=", control, ";"),
 					StringUtils.join(predicateName, "=", control, ";"),
 					StringUtils.join("while(", predicateName, ")", "{"), matcher.group(1) + ";",
 					matcher.group(3).replaceAll(",", ";") + ";");
@@ -96,7 +97,8 @@ public class PredicateParser {
 		if (matcher.find()) {
 			String control = matcher.group(2).trim();
 			String predicateName = "P_" + predicateCounter.getAndIncrement();
-			return new PredicateInfo(predicateName, StringUtils.join("boolean", " ", predicateName, "=", control, ";"),
+			return new PredicateInfo(predicateName, control, "WHILE",
+					StringUtils.join("boolean", " ", predicateName, "=", control, ";"),
 					StringUtils.join(predicateName, "=", control, ";"),
 					StringUtils.join(matcher.group(1), predicateName, matcher.group(3), "{"), null, null);
 		}
@@ -115,7 +117,8 @@ public class PredicateParser {
 		if (matcher.find()) {
 			String control = matcher.group(2).trim();
 			String predicateName = "P_" + predicateCounter.getAndIncrement();
-			return new PredicateInfo(predicateName, StringUtils.join("boolean", " ", predicateName, ";"),
+			return new PredicateInfo(predicateName, control, "DO-WHILE",
+					StringUtils.join("boolean", " ", predicateName, ";"),
 					StringUtils.join(predicateName, "=", control, ";"),
 					StringUtils.join(matcher.group(1), predicateName, matcher.group(3)), null, null);
 		}
@@ -134,7 +137,8 @@ public class PredicateParser {
 		if (matcher.find()) {
 			String control = matcher.group(2).trim();
 			String predicateName = "P_" + predicateCounter.getAndIncrement();
-			return new PredicateInfo(predicateName, StringUtils.join("boolean", " ", predicateName, "=", control, ";"),
+			return new PredicateInfo(predicateName, control, "IF",
+					StringUtils.join("boolean", " ", predicateName, "=", control, ";"),
 					StringUtils.join(predicateName, "=", control, ";"),
 					StringUtils.join(matcher.group(1), predicateName, matcher.group(3), "{"), null, null);
 		}
@@ -153,7 +157,8 @@ public class PredicateParser {
 		if (matcher.find()) {
 			String control = matcher.group(2).trim();
 			String predicateName = "P_" + predicateCounter.getAndIncrement();
-			return new PredicateInfo(predicateName, StringUtils.join("boolean", " ", predicateName, "=", control, ";"),
+			return new PredicateInfo(predicateName, control, "ELSE-IF",
+					StringUtils.join("boolean", " ", predicateName, "=", control, ";"),
 					StringUtils.join(predicateName, "=", control, ";"),
 					StringUtils.join(matcher.group(1), predicateName, matcher.group(3), "{"), null, null);
 		}
@@ -230,7 +235,8 @@ public class PredicateParser {
 				parentStatement = parentStatement.replaceAll(entry.getKey(), entry.getValue());
 			}
 
-			return new PredicateInfo(predicateName, StringUtils.join("boolean", " ", predicateName, "=", control, ";"),
+			return new PredicateInfo(predicateName, control, "TERNARY",
+					StringUtils.join("boolean", " ", predicateName, "=", control, ";"),
 					StringUtils.join(predicateName, "=", control, ";"), parentStatement, null, null);
 		}
 		return null;
