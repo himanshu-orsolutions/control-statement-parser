@@ -223,17 +223,15 @@ public class PredicateParser {
 	}
 
 	/**
-	 * Processes the ternary statement
+	 * Processes the initialization ternary statement
 	 * 
-	 * @param statement         The statement
-	 * @param isReturnStatement if the statement is return statement
+	 * @param statement The statement
 	 * @return The predicate information
 	 */
-	public static PredicateInfo processTernaryStatement(String statement, boolean isReturnStatement) {
+	public static PredicateInfo processInitializationTernaryStatement(String statement) {
 
 		ReplacementInfo replacementInfo = replaceStrings(statement);
-		Matcher matcher = (isReturnStatement ? TERNARY_STATEMENT_PATTERN_RETURN : TERNARY_STATEMENT_PATTERN_INIT)
-				.matcher(replacementInfo.getUpdatedString());
+		Matcher matcher = TERNARY_STATEMENT_PATTERN_INIT.matcher(replacementInfo.getUpdatedString());
 		if (matcher.find()) {
 			String control = matcher.group(2);
 			// Reverting back the replacements in predicate
@@ -251,6 +249,100 @@ public class PredicateParser {
 			return new PredicateInfo(predicateName, control, "TERNARY",
 					StringUtils.join("boolean", " ", predicateName, "=", control, ";"),
 					StringUtils.join(predicateName, "=", control, ";"), parentStatement, null, null);
+		}
+		return null;
+	}
+
+	/**
+	 * Checks if the brackets are equal in the statements
+	 * 
+	 * @param statement The statement
+	 * @return The equality status
+	 */
+	private static boolean areBracketsEqual(String statement) {
+
+		char[] chars = statement.toCharArray();
+		int open = 0;
+		int close = 0;
+		for (char ch : chars) {
+			if (ch == '(') {
+				open++;
+			} else if (ch == ')') {
+				close++;
+			}
+		}
+
+		return open == close;
+	}
+
+	/**
+	 * Processes the return ternary statement
+	 * 
+	 * @param statement The statement
+	 * @return The predicate information
+	 */
+	public static PredicateInfo processReturnTernaryStatement(String statement) {
+
+		ReplacementInfo replacementInfo = replaceStrings(statement);
+		Matcher matcher = TERNARY_STATEMENT_PATTERN_RETURN.matcher(replacementInfo.getUpdatedString());
+		if (matcher.find()) {
+			String updatedString = replacementInfo.getUpdatedString();
+			int refIndex = updatedString.indexOf("?");
+			if (!areBracketsEqual(updatedString.substring(0, refIndex))) { // The ternary statement is present inside
+																			// parenthesis
+				StringBuilder statementBuilder = new StringBuilder();
+				statementBuilder.append(" )");
+				int count = 1;
+				int index = refIndex - 3;
+				while (index >= 0 && count != 0) {
+					char ch = updatedString.charAt(index);
+					if (ch == '(') {
+						count--;
+					} else if (ch == ')') {
+						count++;
+					}
+					index--;
+					statementBuilder.append(ch);
+				}
+				index++;
+
+				String control = statementBuilder.reverse().toString();
+
+				// Reverting back the replacements in predicate
+				for (Entry<String, String> entry : replacementInfo.getReplacementMap().entrySet()) {
+					control = control.replaceAll(entry.getKey(), entry.getValue());
+				}
+
+				String predicateName = "P_" + predicateCounter.getAndIncrement();
+				String parentStatement = StringUtils.join(updatedString.substring(0, index), predicateName,
+						updatedString.substring(refIndex));
+				// Reverting back the replacements in predicate
+				for (Entry<String, String> entry : replacementInfo.getReplacementMap().entrySet()) {
+					parentStatement = parentStatement.replaceAll(entry.getKey(), entry.getValue());
+				}
+
+				return new PredicateInfo(predicateName, control, "TERNARY",
+						StringUtils.join("boolean", " ", predicateName, "=", control, ";"),
+						StringUtils.join(predicateName, "=", control, ";"), parentStatement, null, null);
+
+			} else {
+				String control = matcher.group(2);
+				// Reverting back the replacements in predicate
+				for (Entry<String, String> entry : replacementInfo.getReplacementMap().entrySet()) {
+					control = control.replaceAll(entry.getKey(), entry.getValue());
+				}
+
+				String predicateName = "P_" + predicateCounter.getAndIncrement();
+				String parentStatement = StringUtils.join(matcher.group(1), predicateName, matcher.group(3));
+				// Reverting back the replacements in predicate
+				for (Entry<String, String> entry : replacementInfo.getReplacementMap().entrySet()) {
+					parentStatement = parentStatement.replaceAll(entry.getKey(), entry.getValue());
+				}
+
+				return new PredicateInfo(predicateName, control, "TERNARY",
+						StringUtils.join("boolean", " ", predicateName, "=", control, ";"),
+						StringUtils.join(predicateName, "=", control, ";"), parentStatement, null, null);
+			}
 		}
 		return null;
 	}

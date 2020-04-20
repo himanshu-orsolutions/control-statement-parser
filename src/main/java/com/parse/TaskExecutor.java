@@ -408,8 +408,9 @@ public class TaskExecutor {
 			startPos++;
 		}
 
-		PredicateInfo predicateInfo = PredicateParser.processTernaryStatement(statementBuilder.toString(),
-				isReturnStatement);
+		PredicateInfo predicateInfo = isReturnStatement
+				? PredicateParser.processReturnTernaryStatement(statementBuilder.toString())
+				: PredicateParser.processInitializationTernaryStatement(statementBuilder.toString());
 		if (predicateInfo != null) {
 			predicateInfoList.add(predicateInfo);
 			updatedLines.add(predicateInfo.getInitializationStatement());
@@ -668,6 +669,8 @@ public class TaskExecutor {
 				i = processIfElseifElse(lines, updatedLines, i, totalLines);
 			} else if (lines.get(i).trim().matches("^\\w+ \\w+ \\=.*")) {
 				i = processTernaryAssignmentIfFound(lines, updatedLines, i, totalLines, false);
+			} else if (lines.get(i).trim().matches("^return.*")) {
+				i = processTernaryAssignmentIfFound(lines, updatedLines, i, totalLines, true);
 			} else if (lines.get(i).trim().startsWith(Keywords.SWITCH)) {
 				i = processSwitchStatements(lines, updatedLines, i, totalLines);
 			} else {
