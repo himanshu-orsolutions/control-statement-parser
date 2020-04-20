@@ -2,19 +2,32 @@ package com.parse.samples;
 
 public class Test {
 
-	public static String getReply(String message) {
-		return "how are you?".equals(message) ? "I am fine. Thanks :)" : "How are you doing?";
+	public static int func(String... arr) {
+
+		return 1;
 	}
 
 	public static void main(String[] args) {
 
-		String message = "how are you?";
-		String reply = "how are you?".equals(message) ? "I am fine. Thanks :)" : "How are you doing?";
-		System.out.println(reply);
+		int a = 3;
+		switch (a) {
+		case 1:
+			System.out.println("Its 1");
+			break;
+		case 2:
+			System.out.println("Its 2");
+			break;
+		case 3:
+			System.out.println("Its 3");
 
-		int i = 0;
-		while (i++ < 10) {
-			System.out.println("Cool");
+			for (int i = 0; i < 5; i++) {
+				System.out.println("Cool");
+			}
+		case 4:
+			System.out.println("Its 4");
+			break;
+		default:
+			System.out.println("Its default");
 		}
 	}
 }

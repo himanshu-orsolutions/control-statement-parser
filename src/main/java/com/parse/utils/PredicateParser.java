@@ -1,6 +1,8 @@
 package com.parse.utils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -8,6 +10,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.parse.models.Case;
 import com.parse.models.PredicateInfo;
 import com.parse.models.ReplacementInfo;
 
@@ -56,6 +59,16 @@ public class PredicateParser {
 	 * The ternary statement pattern at return
 	 */
 	private static final Pattern TERNARY_STATEMENT_PATTERN_RETURN = Pattern.compile("(return )(.*)(\\?.*\\:.*)");
+
+	/**
+	 * The switch pattern
+	 */
+	private static final Pattern SWITCH_PATTERN = Pattern.compile("switch \\((.*)\\)");
+
+	/**
+	 * The switch case pattern
+	 */
+	private static final Pattern SWITCH_CASE_PATTERN = Pattern.compile("case (.*)\\:");
 
 	private PredicateParser() {
 		// Its a utility class. Thus instantiation is not allowed.
@@ -240,5 +253,62 @@ public class PredicateParser {
 					StringUtils.join(predicateName, "=", control, ";"), parentStatement, null, null);
 		}
 		return null;
+	}
+
+	/**
+	 * Gets the first switch operand
+	 * 
+	 * @param statement The switch statement
+	 * @return The first operand
+	 */
+	public static String getSwitchFirstOperand(String statement) {
+
+		Matcher matcher = SWITCH_PATTERN.matcher(statement);
+		if (matcher.find()) {
+			return matcher.group(1);
+		}
+		return StringUtils.EMPTY;
+	}
+
+	/**
+	 * Parses the cases from switch inner body
+	 * 
+	 * @param switchBodyLines The switch body lines
+	 * @return The cases
+	 */
+	public static List<Case> processCases(List<String> switchBodyLines) {
+
+		List<Case> cases = new ArrayList<>();
+
+		if (!switchBodyLines.isEmpty()) {
+			int totalInnerBodyLines = switchBodyLines.size();
+			int lineCounter = 0;
+			int spaceCount = IndentSpaceParser.getIndentSpacesCount(switchBodyLines.get(0));
+
+			while (lineCounter < totalInnerBodyLines) {
+				Matcher matcher = SWITCH_CASE_PATTERN.matcher(switchBodyLines.get(lineCounter).trim());
+				String operand = "";
+				if (matcher.find()) {
+					operand = matcher.group(1);
+				}
+
+				lineCounter++;
+				List<String> body = new ArrayList<>();
+				boolean withBreak = false;
+
+				while (lineCounter < totalInnerBodyLines
+						&& IndentSpaceParser.getIndentSpacesCount(switchBodyLines.get(lineCounter)) > spaceCount) {
+					if (switchBodyLines.get(lineCounter).trim().equals("break;")) {
+						withBreak = true;
+						lineCounter++;
+						break;
+					}
+					body.add(switchBodyLines.get(lineCounter));
+					lineCounter++;
+				}
+				cases.add(new Case(operand, body, withBreak));
+			}
+		}
+		return cases;
 	}
 }

@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -18,6 +17,8 @@ import com.google.googlejavaformat.java.FormatterException;
 import com.google.googlejavaformat.java.JavaFormatterOptions;
 import com.google.googlejavaformat.java.JavaFormatterOptions.Style;
 import com.parse.constants.Keywords;
+import com.parse.models.Case;
+import com.parse.models.OperandType;
 import com.parse.models.PredicateInfo;
 import com.parse.utils.CodeFormatter;
 import com.parse.utils.IndentSpaceParser;
@@ -74,7 +75,6 @@ public class TaskExecutor {
 		}
 		List<String> innerBodyLines = new ArrayList<>();
 		int bodyLineCounter = startPos;
-		int parentLineNumber = startPos;
 		while (bodyLineCounter < totalLines) {
 			String line = lines.get(bodyLineCounter);
 			if (StringUtils.isNotBlank(line.trim())) {
@@ -87,7 +87,7 @@ public class TaskExecutor {
 			bodyLineCounter++;
 		}
 
-		updatedLines.addAll(process(innerBodyLines, parentLineNumber));
+		updatedLines.addAll(process(innerBodyLines));
 		if (predicateInfo != null) {
 			updatedLines.add(spaces + "\t" + predicateInfo.getVarChangeStatement());
 			updatedLines.add(spaces + "\t" + predicateInfo.getReuseStatement());
@@ -139,7 +139,6 @@ public class TaskExecutor {
 		}
 		List<String> innerBodyLines = new ArrayList<>();
 		int bodyLineCounter = startPos;
-		int parentLineNumber = startPos;
 		while (bodyLineCounter < totalLines) {
 			String line = lines.get(bodyLineCounter);
 			if (StringUtils.isNotBlank(line.trim())) {
@@ -152,7 +151,7 @@ public class TaskExecutor {
 			bodyLineCounter++;
 		}
 
-		updatedLines.addAll(process(innerBodyLines, parentLineNumber));
+		updatedLines.addAll(process(innerBodyLines));
 		if (predicateInfo != null) {
 			updatedLines.add(spaces + "\t" + predicateInfo.getReuseStatement());
 		}
@@ -187,7 +186,6 @@ public class TaskExecutor {
 
 		List<String> innerBodyLines = new ArrayList<>();
 		int bodyLineCounter = startPos + 1;
-		int parentLineNumber = startPos;
 		while (bodyLineCounter < totalLines) {
 			String line = lines.get(bodyLineCounter);
 			if (StringUtils.isNotBlank(line.trim())) {
@@ -200,7 +198,7 @@ public class TaskExecutor {
 			bodyLineCounter++;
 		}
 
-		updatedLines.addAll(process(innerBodyLines, parentLineNumber));
+		updatedLines.addAll(process(innerBodyLines));
 
 		// The statement might be present in multiple lines, thus merging all
 		StringBuilder statementBuilder = new StringBuilder();
@@ -272,7 +270,6 @@ public class TaskExecutor {
 		}
 		List<String> innerBodyLines = new ArrayList<>();
 		int bodyLineCounter = startPos;
-		int parentLineNumber = startPos;
 		while (bodyLineCounter < totalLines) {
 			String line = lines.get(bodyLineCounter);
 			if (StringUtils.isNotBlank(line.trim())) {
@@ -285,7 +282,7 @@ public class TaskExecutor {
 			bodyLineCounter++;
 		}
 
-		updatedLines.addAll(process(innerBodyLines, parentLineNumber));
+		updatedLines.addAll(process(innerBodyLines));
 
 		if (bodyLineCounter < totalLines
 				&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) == indentedSpaceCount) {
@@ -346,7 +343,6 @@ public class TaskExecutor {
 				updatedLines.add(spaces + predicateInfo.getParentStatement());
 			}
 
-			int parentLineNumber = bodyLineCounter;
 			List<String> innerBodyLines = new ArrayList<>();
 			while (bodyLineCounter < totalLines) {
 				line = lines.get(bodyLineCounter);
@@ -360,7 +356,7 @@ public class TaskExecutor {
 				bodyLineCounter++;
 			}
 
-			updatedLines.addAll(process(innerBodyLines, parentLineNumber));
+			updatedLines.addAll(process(innerBodyLines));
 
 			if (bodyLineCounter < totalLines
 					&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) == indentedSpaceCount) {
@@ -401,7 +397,8 @@ public class TaskExecutor {
 		statementBuilder.append(removeComment(lines.get(startPos)));
 		startPos++;
 
-		while (IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount) {
+		int comparisonSpace = isReturnStatement ? indentedSpaceCount - 1 : indentedSpaceCount;
+		while (IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > comparisonSpace) {
 			statementBuilder.append(removeComment(lines.get(startPos)));
 			startPos++;
 		}
@@ -440,7 +437,6 @@ public class TaskExecutor {
 			bodyLineCounter++;
 			String spaces = IndentSpaceParser.getIndentSpaces(lines.get(bodyLineCounter));
 			int indentedSpaceCount = IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter));
-			int parentLineNumber = bodyLineCounter;
 			updatedLines.add("else {");
 			bodyLineCounter++;
 
@@ -458,7 +454,7 @@ public class TaskExecutor {
 				bodyLineCounter++;
 			}
 
-			updatedLines.addAll(process(innerBodyLines, parentLineNumber));
+			updatedLines.addAll(process(innerBodyLines));
 
 			if (bodyLineCounter < totalLines
 					&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) == indentedSpaceCount) {
@@ -508,53 +504,169 @@ public class TaskExecutor {
 	}
 
 	/**
+	 * Gets the operand type from switch case
+	 * 
+	 * @param caseInfo The case info
+	 * @return The operand type
+	 */
+	private static OperandType getOperandType(Case caseInfo) {
+
+		String operand = caseInfo.getOperand();
+		if (StringUtils.isEmpty(operand)) {
+			return OperandType.NONE;
+		} else {
+			if (operand.matches("\\d+")) {
+				return OperandType.INTEGER;
+			} else if (operand.matches("'.'")) {
+				return OperandType.CHARACTER;
+			} else if (operand.matches("\".*\"")) {
+				return OperandType.STRING;
+			} else {
+				return OperandType.ENUM;
+			}
+		}
+	}
+
+	/**
+	 * Processes the switch statements
+	 * 
+	 * @param lines
+	 * @param updatedLines
+	 * @param startPos
+	 * @param totalLines
+	 * @return
+	 */
+	private static int processSwitchStatements(List<String> lines, List<String> updatedLines, int startPos,
+			int totalLines) {
+
+		// Getting the current indentation of for statement
+		String spaces = IndentSpaceParser.getIndentSpaces(lines.get(startPos));
+		int indentedSpaceCount = IndentSpaceParser.getIndentSpacesCount(lines.get(startPos));
+
+		// The statement might be present in multiple lines, thus merging all
+		StringBuilder statementBuilder = new StringBuilder();
+		statementBuilder.append(removeComment(lines.get(startPos)));
+		startPos++;
+
+		while (IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount) {
+			statementBuilder.append(removeComment(lines.get(startPos)));
+			startPos++;
+		}
+
+		String firstOperand = PredicateParser.getSwitchFirstOperand(statementBuilder.toString());
+		if (StringUtils.isNotBlank(firstOperand)) {
+
+			List<String> innerBodyLines = new ArrayList<>();
+			int bodyLineCounter = startPos;
+			while (bodyLineCounter < totalLines) {
+				String line = lines.get(bodyLineCounter);
+				if (StringUtils.isNotBlank(line.trim())) {
+					if (!StringUtils.equals(line, spaces + "}")) {
+						innerBodyLines.add(line);
+					} else {
+						break;
+					}
+				}
+				bodyLineCounter++;
+			}
+
+			if (!innerBodyLines.isEmpty()) {
+				List<Case> cases = PredicateParser.processCases(innerBodyLines);
+				if (!cases.isEmpty()) {
+					OperandType operandType = getOperandType(cases.get(0));
+					if (operandType.equals(OperandType.NONE)) {
+						updatedLines.addAll(process(cases.get(0).getBody()));
+					} else {
+						if (operandType.equals(OperandType.INTEGER)) {
+							firstOperand = "Integer.valueOf(" + firstOperand + ")";
+						} else if (operandType.equals(OperandType.CHARACTER)) {
+							firstOperand = "Character.valueOf(" + firstOperand + ")";
+						}
+
+						int totalCases = cases.size();
+						int pos = updatedLines.size();
+						for (int i = 0; i < totalCases; i++) {
+							List<String> statements = new ArrayList<>();
+							List<List<String>> bodies = new ArrayList<>();
+
+							for (int j = i; j < totalCases; j++) {
+								statements.add(
+										StringUtils.join(firstOperand, ".equals(", cases.get(j).getOperand(), ")"));
+								bodies.add(cases.get(j).getBody());
+
+								if (cases.get(j).isWithBreak()) {
+									break;
+								}
+							}
+
+							if (i == 0) {
+								String statement = StringUtils.join("if (", StringUtils.join(statements, "||"), "){");
+								PredicateInfo predicateInfo = PredicateParser.processIfStatement(statement);
+								predicateInfoList.add(predicateInfo);
+								updatedLines.add(pos++, predicateInfo.getInitializationStatement());
+								updatedLines.add(predicateInfo.getParentStatement());
+							} else if (i < totalCases - 1) {
+								String statement = StringUtils.join("else if (", StringUtils.join(statements, "||"),
+										"){");
+								PredicateInfo predicateInfo = PredicateParser.processElseIfStatement(statement);
+								predicateInfoList.add(predicateInfo);
+								updatedLines.add(pos++, predicateInfo.getInitializationStatement());
+								updatedLines.add(predicateInfo.getParentStatement());
+							} else {
+								if (StringUtils.isBlank(cases.get(totalCases - 1).getOperand())) {
+									updatedLines.add("else{");
+								} else {
+									String statement = StringUtils.join("else if (", StringUtils.join(statements, "||"),
+											"){");
+									PredicateInfo predicateInfo = PredicateParser.processElseIfStatement(statement);
+									predicateInfoList.add(predicateInfo);
+									updatedLines.add(pos++, predicateInfo.getInitializationStatement());
+									updatedLines.add(predicateInfo.getParentStatement());
+								}
+							}
+
+							for (List<String> body : bodies) {
+								updatedLines.addAll(process(body));
+							}
+
+							updatedLines.add("}");
+						}
+					}
+				}
+			}
+			return bodyLineCounter;
+		} else {
+			updatedLines.add(statementBuilder.toString());
+			return startPos--;
+		}
+	}
+
+	/**
 	 * Processes the lines of code
 	 * 
-	 * @param lines            The lines
-	 * @param parentLineNumber The parent moduleline number
+	 * @param lines The lines
 	 * @return The processed lines of code
 	 */
-	private static List<String> process(List<String> lines, int parentLineNumber) {
+	private static List<String> process(List<String> lines) {
 
 		List<String> updatedLines = new ArrayList<>();
 		int totalLines = lines.size();
 
 		for (int i = 0; i < totalLines; i++) {
 			if (lines.get(i).trim().startsWith(Keywords.FOR)) {
-				System.out.println(String.format("Processing of for loop started. Line no: %d", parentLineNumber + i));
 				i = processForLoop(lines, updatedLines, i, totalLines);
-				System.out
-						.println(String.format("Processing of for loop completed. Line no: %d", parentLineNumber + i));
 			} else if (lines.get(i).trim().startsWith(Keywords.WHILE)) {
-				System.out
-						.println(String.format("Processing of while loop started. Line no: %d", parentLineNumber + i));
 				i = processWhileLoop(lines, updatedLines, i, totalLines);
-				System.out.println(
-						String.format("Processing of while loop completed. Line no: %d", parentLineNumber + i));
 			} else if (lines.get(i).trim().startsWith(Keywords.DO)) {
-				System.out.println(
-						String.format("Processing of do-while loop started. Line no: %d", parentLineNumber + i));
 				i = processDoWhileLoop(lines, updatedLines, i, totalLines);
-				System.out.println(
-						String.format("Processing of do-while loop completed. Line no: %d", parentLineNumber + i));
 			} else if (lines.get(i).trim().startsWith(Keywords.IF)) {
-				System.out.println(
-						String.format("Processing of if statements started. Line no: %d", parentLineNumber + i));
 				i = processIfElseifElse(lines, updatedLines, i, totalLines);
-				System.out.println(
-						String.format("Processing of if statements completed. Line no: %d", parentLineNumber + i));
 			} else if (lines.get(i).trim().matches("^\\w+ \\w+ \\=.*")) {
-				System.out.println(
-						String.format("Processing of ternary stament started. Line no: %d", parentLineNumber + i));
 				i = processTernaryAssignmentIfFound(lines, updatedLines, i, totalLines, false);
-				System.out.println(
-						String.format("Processing of ternary stament completed. Line no: %d", parentLineNumber + i));
 			} else if (lines.get(i).trim().matches("^return.*")) {
-				System.out.println(
-						String.format("Processing of ternary stament started. Line no: %d", parentLineNumber + i));
 				i = processTernaryAssignmentIfFound(lines, updatedLines, i, totalLines, true);
-				System.out.println(
-						String.format("Processing of ternary stament completed. Line no: %d", parentLineNumber + i));
+			} else if (lines.get(i).trim().startsWith(Keywords.SWITCH)) {
+				i = processSwitchStatements(lines, updatedLines, i, totalLines);
 			} else {
 				updatedLines.add(lines.get(i));
 			}
@@ -602,7 +714,7 @@ public class TaskExecutor {
 		try {
 			String formattedJava = CodeFormatter.format(Paths.get(args[1]));
 			predicateInfoList = new ArrayList<>();
-			List<String> updatedLines = process(Arrays.asList(formattedJava.split("\n")), 0);
+			List<String> updatedLines = process(Arrays.asList(formattedJava.split("\n")));
 
 			// Saving the updated code
 			StringBuilder codeBuilder = new StringBuilder();
