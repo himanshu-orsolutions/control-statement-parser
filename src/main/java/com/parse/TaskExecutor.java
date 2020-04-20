@@ -57,7 +57,8 @@ public class TaskExecutor {
 		statementBuilder.append(removeComment(lines.get(startPos)));
 		startPos++;
 
-		while (IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4) {
+		while (startPos < totalLines
+				&& IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4) {
 			statementBuilder.append(removeComment(lines.get(startPos)));
 			startPos++;
 		}
@@ -125,7 +126,8 @@ public class TaskExecutor {
 		statementBuilder.append(removeComment(lines.get(startPos)));
 		startPos++;
 
-		while (IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4) {
+		while (startPos < totalLines
+				&& IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4) {
 			statementBuilder.append(removeComment(lines.get(startPos)));
 			startPos++;
 		}
@@ -205,7 +207,8 @@ public class TaskExecutor {
 		statementBuilder.append(removeComment(lines.get(bodyLineCounter)));
 		bodyLineCounter++;
 
-		while (IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) > indentedSpaceCount + 4) {
+		while (bodyLineCounter < totalLines
+				&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) > indentedSpaceCount + 4) {
 			statementBuilder.append(removeComment(lines.get(bodyLineCounter)));
 			bodyLineCounter++;
 		}
@@ -256,7 +259,8 @@ public class TaskExecutor {
 		statementBuilder.append(removeComment(lines.get(startPos)));
 		startPos++;
 
-		while (IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4) {
+		while (startPos < totalLines
+				&& IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4) {
 			statementBuilder.append(removeComment(lines.get(startPos)));
 			startPos++;
 		}
@@ -330,7 +334,8 @@ public class TaskExecutor {
 			statementBuilder.append(removeComment(lines.get(bodyLineCounter)));
 			bodyLineCounter++;
 
-			while (IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) > indentedSpaceCount + 4) {
+			while (bodyLineCounter < totalLines
+					&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) > indentedSpaceCount + 4) {
 				statementBuilder.append(removeComment(lines.get(bodyLineCounter)));
 				bodyLineCounter++;
 			}
@@ -398,7 +403,7 @@ public class TaskExecutor {
 		startPos++;
 
 		int comparisonSpace = isReturnStatement ? indentedSpaceCount - 1 : indentedSpaceCount;
-		while (IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > comparisonSpace) {
+		while (startPos < totalLines && IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > comparisonSpace) {
 			statementBuilder.append(removeComment(lines.get(startPos)));
 			startPos++;
 		}
@@ -663,8 +668,6 @@ public class TaskExecutor {
 				i = processIfElseifElse(lines, updatedLines, i, totalLines);
 			} else if (lines.get(i).trim().matches("^\\w+ \\w+ \\=.*")) {
 				i = processTernaryAssignmentIfFound(lines, updatedLines, i, totalLines, false);
-			} else if (lines.get(i).trim().matches("^return.*")) {
-				i = processTernaryAssignmentIfFound(lines, updatedLines, i, totalLines, true);
 			} else if (lines.get(i).trim().startsWith(Keywords.SWITCH)) {
 				i = processSwitchStatements(lines, updatedLines, i, totalLines);
 			} else {

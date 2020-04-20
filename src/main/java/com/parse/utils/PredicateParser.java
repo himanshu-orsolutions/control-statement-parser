@@ -284,18 +284,26 @@ public class PredicateParser {
 			int totalInnerBodyLines = switchBodyLines.size();
 			int lineCounter = 0;
 			int spaceCount = IndentSpaceParser.getIndentSpacesCount(switchBodyLines.get(0));
+			String spaces = IndentSpaceParser.getIndentSpaces(switchBodyLines.get(0));
 
 			while (lineCounter < totalInnerBodyLines) {
-				Matcher matcher = SWITCH_CASE_PATTERN.matcher(switchBodyLines.get(lineCounter).trim());
+				String line = switchBodyLines.get(lineCounter);
+				if (!line.trim().equals("default:") && line.endsWith("default:")) {
+					line = line.substring(0, line.lastIndexOf("default:"));
+					switchBodyLines.add(lineCounter + 1, spaces + "default:");
+					totalInnerBodyLines++;
+				}
+
+				Matcher matcher = SWITCH_CASE_PATTERN.matcher(line.trim());
 				String operand = "";
 				if (matcher.find()) {
 					operand = matcher.group(1);
 				}
 
-				lineCounter++;
 				List<String> body = new ArrayList<>();
 				boolean withBreak = false;
 
+				lineCounter++;
 				while (lineCounter < totalInnerBodyLines
 						&& IndentSpaceParser.getIndentSpacesCount(switchBodyLines.get(lineCounter)) > spaceCount) {
 					if (switchBodyLines.get(lineCounter).trim().equals("break;")) {
