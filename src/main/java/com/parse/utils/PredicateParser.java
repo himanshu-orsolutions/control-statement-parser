@@ -53,7 +53,8 @@ public class PredicateParser {
 	/**
 	 * The ternary statement pattern at initialization
 	 */
-	private static final Pattern TERNARY_STATEMENT_PATTERN_INIT = Pattern.compile("(\\w+ \\w+ \\= )(.*)(\\?.*\\:.*)");
+	private static final Pattern TERNARY_STATEMENT_PATTERN_INIT = Pattern
+			.compile("((\\w+ )?\\w+ \\= )(.*)(\\?.*\\:.*)");
 
 	/**
 	 * The ternary statement pattern at return
@@ -233,14 +234,14 @@ public class PredicateParser {
 		ReplacementInfo replacementInfo = replaceStrings(statement);
 		Matcher matcher = TERNARY_STATEMENT_PATTERN_INIT.matcher(replacementInfo.getUpdatedString());
 		if (matcher.find()) {
-			String control = matcher.group(2);
+			String control = matcher.group(3);
 			// Reverting back the replacements in predicate
 			for (Entry<String, String> entry : replacementInfo.getReplacementMap().entrySet()) {
 				control = control.replaceAll(entry.getKey(), entry.getValue());
 			}
 
 			String predicateName = "P_" + predicateCounter.getAndIncrement();
-			String parentStatement = StringUtils.join(matcher.group(1), predicateName, matcher.group(3));
+			String parentStatement = StringUtils.join(matcher.group(1), predicateName, matcher.group(4));
 			// Reverting back the replacements in predicate
 			for (Entry<String, String> entry : replacementInfo.getReplacementMap().entrySet()) {
 				parentStatement = parentStatement.replaceAll(entry.getKey(), entry.getValue());
