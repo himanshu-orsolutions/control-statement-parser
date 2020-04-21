@@ -567,7 +567,7 @@ public class TaskExecutor {
 			while (bodyLineCounter < totalLines) {
 				String line = lines.get(bodyLineCounter);
 				if (StringUtils.isNotBlank(line.trim())) {
-					if (!StringUtils.equals(line, spaces + "}")) {
+					if (!StringUtils.equals(line.trim(), "}")) {
 						innerBodyLines.add(line);
 					} else {
 						break;
