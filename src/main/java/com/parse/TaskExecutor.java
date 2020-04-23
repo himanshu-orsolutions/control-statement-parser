@@ -1,14 +1,16 @@
 package com.parse;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -67,6 +69,7 @@ public class TaskExecutor {
 
 		if (predicateInfo != null) {
 			predicateInfoList.add(predicateInfo);
+			updatedLines.add("{");
 			updatedLines.add(spaces + predicateInfo.getVarInitializationStatement());
 			updatedLines.add(spaces + predicateInfo.getInitializationStatement());
 			updatedLines.add(spaces + predicateInfo.getParentStatement());
@@ -102,7 +105,7 @@ public class TaskExecutor {
 			bodyLineCounter--;
 			updatedLines.add(spaces + "}");
 		}
-
+		updatedLines.add("}");
 		return bodyLineCounter;
 	}
 
@@ -685,15 +688,44 @@ public class TaskExecutor {
 	 * Saves the updated code
 	 * 
 	 * @param code     The code
-	 * @param fileName The file name
+	 * @param filePath The file path
 	 */
-	private static void saveUpdatedCode(String code, String fileName) {
+	private static void saveUpdatedCode(String code, Path filePath) {
 
-		try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath.toFile()))) {
 			writer.write(code);
 			writer.flush();
 		} catch (IOException ioException) {
 			System.out.println("Error saving the updated code.");
+		}
+	}
+
+	/**
+	 * Processes the input file path
+	 * 
+	 * @param inputFilePath The input file path
+	 * @param outputPath    The output path
+	 */
+	private static void processPath(Path inputFilePath, Path outputPath) {
+
+		try {
+			String formattedJava = CodeFormatter.format(inputFilePath);
+			predicateInfoList = new ArrayList<>();
+			List<String> updatedLines = process(Arrays.asList(formattedJava.split("\n")));
+
+			// Saving the updated code
+			StringBuilder codeBuilder = new StringBuilder();
+			for (String line : updatedLines) {
+				codeBuilder.append(line);
+				codeBuilder.append("\n");
+			}
+			String formattedUpdatedCode = formatter.formatSource(codeBuilder.toString());
+			saveUpdatedCode(formattedUpdatedCode, inputFilePath);
+
+			// Creating the predicates file
+			PredicateRecorder.create(inputFilePath, outputPath, predicateInfoList);
+		} catch (FormatterException formatterException) {
+			System.out.println("Error formatting the code.");
 		}
 	}
 
@@ -709,35 +741,25 @@ public class TaskExecutor {
 			System.exit(1);
 		}
 
-		if (!Files.exists(Paths.get(args[0]))) {
+		Path outputPath = Paths.get(args[0]);
+		if (!outputPath.toFile().exists()) {
 			try {
-				Files.createDirectories(Paths.get(args[0]));
+				Files.createDirectories(outputPath);
 			} catch (IOException ioException) {
 				System.out.println("Error creating the output directory.");
 			}
 		}
 
-		try {
-			String formattedJava = CodeFormatter.format(Paths.get(args[1]));
-			predicateInfoList = new ArrayList<>();
-			List<String> updatedLines = process(Arrays.asList(formattedJava.split("\n")));
-
-			// Saving the updated code
-			StringBuilder codeBuilder = new StringBuilder();
-			for (String line : updatedLines) {
-				codeBuilder.append(line);
-				codeBuilder.append("\n");
+		Path inputPath = Paths.get(args[1]);
+		if (inputPath.toFile().isDirectory()) {
+			try (Stream<Path> pathStream = Files.walk(inputPath, FileVisitOption.FOLLOW_LINKS)) {
+				pathStream.filter(path -> path.toString().endsWith(".java"))
+						.forEach(path -> processPath(path, outputPath));
+			} catch (IOException e) {
+				System.out.println("Error walking the directory tree");
 			}
-			String formattedUpdatedCode = formatter.formatSource(codeBuilder.toString());
-			saveUpdatedCode(formattedUpdatedCode,
-					args[0] + File.separator + args[1].substring(args[1].lastIndexOf(File.separator) + 1));
-
-			// Creating the predicates file
-			PredicateRecorder.create(
-					args[0] + File.separator + args[1].substring(args[1].lastIndexOf(File.separator) + 1),
-					predicateInfoList);
-		} catch (FormatterException formatterException) {
-			System.out.println("Error formatting the code.");
+		} else {
+			processPath(inputPath, outputPath);
 		}
 	}
 }
