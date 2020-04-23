@@ -59,7 +59,7 @@ public class TaskExecutor {
 		startPos++;
 
 		while (startPos < totalLines
-				&& IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4) {
+				&& IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) >= indentedSpaceCount + 4) {
 			statementBuilder.append(removeComment(lines.get(startPos)));
 			startPos++;
 		}
@@ -129,7 +129,7 @@ public class TaskExecutor {
 		startPos++;
 
 		while (startPos < totalLines
-				&& IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4) {
+				&& IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) >= indentedSpaceCount + 4) {
 			statementBuilder.append(removeComment(lines.get(startPos)));
 			startPos++;
 		}
@@ -210,7 +210,7 @@ public class TaskExecutor {
 		bodyLineCounter++;
 
 		while (bodyLineCounter < totalLines
-				&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) > indentedSpaceCount + 4) {
+				&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) >= indentedSpaceCount + 4) {
 			statementBuilder.append(removeComment(lines.get(bodyLineCounter)));
 			bodyLineCounter++;
 		}
@@ -262,7 +262,7 @@ public class TaskExecutor {
 		startPos++;
 
 		while (startPos < totalLines
-				&& IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4) {
+				&& IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) >= indentedSpaceCount + 4) {
 			statementBuilder.append(removeComment(lines.get(startPos)));
 			startPos++;
 		}
@@ -337,7 +337,7 @@ public class TaskExecutor {
 			bodyLineCounter++;
 
 			while (bodyLineCounter < totalLines
-					&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) > indentedSpaceCount + 4) {
+					&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) >= indentedSpaceCount + 4) {
 				statementBuilder.append(removeComment(lines.get(bodyLineCounter)));
 				bodyLineCounter++;
 			}
@@ -726,7 +726,8 @@ public class TaskExecutor {
 			// Creating the predicates file
 			PredicateRecorder.create(inputFilePath, outputPath, predicateInfoList);
 		} catch (FormatterException | IOException exception) {
-			System.out.println("Error formatting the code.");
+			System.out.println("Error formatting the code. File: " + inputFilePath.toString() + ", Reason: "
+					+ exception.getLocalizedMessage());
 		}
 	}
 
