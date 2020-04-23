@@ -22,7 +22,6 @@ import com.parse.constants.Keywords;
 import com.parse.models.Case;
 import com.parse.models.OperandType;
 import com.parse.models.PredicateInfo;
-import com.parse.utils.CodeFormatter;
 import com.parse.utils.IndentSpaceParser;
 import com.parse.utils.PredicateParser;
 import com.parse.utils.PredicateRecorder;
@@ -557,7 +556,7 @@ public class TaskExecutor {
 		statementBuilder.append(removeComment(lines.get(startPos)));
 		startPos++;
 
-		while (IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount) {
+		while (IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) >= indentedSpaceCount + 4) {
 			statementBuilder.append(removeComment(lines.get(startPos)));
 			startPos++;
 		}
@@ -570,7 +569,7 @@ public class TaskExecutor {
 			while (bodyLineCounter < totalLines) {
 				String line = lines.get(bodyLineCounter);
 				if (StringUtils.isNotBlank(line.trim())) {
-					if (!StringUtils.equals(line.trim(), "}")) {
+					if (!StringUtils.equals(spaces + line.trim(), spaces + "}")) {
 						innerBodyLines.add(line);
 					} else {
 						break;
@@ -599,8 +598,10 @@ public class TaskExecutor {
 							List<List<String>> bodies = new ArrayList<>();
 
 							for (int j = i; j < totalCases; j++) {
-								statements.add(
-										StringUtils.join(firstOperand, ".equals(", cases.get(j).getOperand(), ")"));
+								if (StringUtils.isNoneBlank(cases.get(j).getOperand())) {
+									statements.add(
+											StringUtils.join(firstOperand, ".equals(", cases.get(j).getOperand(), ")"));
+								}
 								bodies.add(cases.get(j).getBody());
 
 								if (cases.get(j).isWithBreak()) {
@@ -709,7 +710,7 @@ public class TaskExecutor {
 	private static void processPath(Path inputFilePath, Path outputPath) {
 
 		try {
-			String formattedJava = CodeFormatter.format(inputFilePath);
+			String formattedJava = formatter.formatSource(new String(Files.readAllBytes(inputFilePath)));
 			predicateInfoList = new ArrayList<>();
 			List<String> updatedLines = process(Arrays.asList(formattedJava.split("\n")));
 
@@ -724,7 +725,7 @@ public class TaskExecutor {
 
 			// Creating the predicates file
 			PredicateRecorder.create(inputFilePath, outputPath, predicateInfoList);
-		} catch (FormatterException formatterException) {
+		} catch (FormatterException | IOException exception) {
 			System.out.println("Error formatting the code.");
 		}
 	}

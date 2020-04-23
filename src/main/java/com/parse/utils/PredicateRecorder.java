@@ -65,8 +65,7 @@ public class PredicateRecorder {
 		predicateInfoList.forEach(predicateInfo -> predicateLineNumberMap.put(predicateInfo.getName(), ""));
 
 		try (BufferedWriter writer = new BufferedWriter(new FileWriter(
-				Paths.get(outputDirectory.toString() + File.separator + getFileName(codePath) + ".txt").toFile(),
-				true))) {
+				Paths.get(outputDirectory.toString() + File.separator + getFileName(codePath) + ".txt").toFile()))) {
 			List<String> lines = Files.readAllLines(codePath);
 			Integer lineNumber = 1;
 			for (String line : lines) {
