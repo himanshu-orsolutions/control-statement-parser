@@ -713,7 +713,7 @@ public class TaskExecutor {
 	private static void processPath(Path inputFilePath, Path outputPath) {
 
 		try {
-
+			System.out.println("Processing " + inputFilePath.toString());
 			String formattedJava = formatter.format(new String(Files.readAllBytes(inputFilePath)));
 			predicateInfoList = new ArrayList<>();
 			List<String> updatedLines = process(Arrays.asList(formattedJava.split("\n")));
@@ -729,6 +729,7 @@ public class TaskExecutor {
 
 			// Creating the predicates file
 			PredicateRecorder.create(inputFilePath, outputPath, predicateInfoList);
+			System.out.println("COMPLETED.");
 		} catch (IOException | FormatterException exception) {
 			System.out.println("Error formatting the code. File: " + inputFilePath.toString() + ", Reason: "
 					+ exception.getLocalizedMessage());
