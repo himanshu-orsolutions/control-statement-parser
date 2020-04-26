@@ -14,15 +14,12 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.google.googlejavaformat.java.Formatter;
-import com.google.googlejavaformat.java.FormatterException;
-import com.google.googlejavaformat.java.JavaFormatterOptions;
-import com.google.googlejavaformat.java.JavaFormatterOptions.Style;
 import com.parse.constants.Keywords;
 import com.parse.models.Case;
 import com.parse.models.OperandType;
 import com.parse.models.PredicateInfo;
 import com.parse.utils.IndentSpaceParser;
+import com.parse.utils.JavaFormatter;
 import com.parse.utils.PredicateParser;
 import com.parse.utils.PredicateRecorder;
 
@@ -31,7 +28,7 @@ import com.parse.utils.PredicateRecorder;
  */
 public class TaskExecutor {
 
-	private static Formatter formatter = new Formatter(JavaFormatterOptions.builder().style(Style.GOOGLE).build());
+	private static JavaFormatter formatter = new JavaFormatter();
 
 	/**
 	 * The list of predicate information
@@ -59,7 +56,7 @@ public class TaskExecutor {
 		startPos++;
 
 		while (startPos < totalLines
-				&& IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) >= indentedSpaceCount + 4) {
+				&& IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4) {
 			statementBuilder.append(removeComment(lines.get(startPos)));
 			startPos++;
 		}
@@ -129,7 +126,7 @@ public class TaskExecutor {
 		startPos++;
 
 		while (startPos < totalLines
-				&& IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) >= indentedSpaceCount + 4) {
+				&& IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4) {
 			statementBuilder.append(removeComment(lines.get(startPos)));
 			startPos++;
 		}
@@ -210,7 +207,7 @@ public class TaskExecutor {
 		bodyLineCounter++;
 
 		while (bodyLineCounter < totalLines
-				&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) >= indentedSpaceCount + 4) {
+				&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) > indentedSpaceCount + 4) {
 			statementBuilder.append(removeComment(lines.get(bodyLineCounter)));
 			bodyLineCounter++;
 		}
@@ -262,7 +259,7 @@ public class TaskExecutor {
 		startPos++;
 
 		while (startPos < totalLines
-				&& IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) >= indentedSpaceCount + 4) {
+				&& IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4) {
 			statementBuilder.append(removeComment(lines.get(startPos)));
 			startPos++;
 		}
@@ -337,7 +334,7 @@ public class TaskExecutor {
 			bodyLineCounter++;
 
 			while (bodyLineCounter < totalLines
-					&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) >= indentedSpaceCount + 4) {
+					&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) > indentedSpaceCount + 4) {
 				statementBuilder.append(removeComment(lines.get(bodyLineCounter)));
 				bodyLineCounter++;
 			}
@@ -556,7 +553,7 @@ public class TaskExecutor {
 		statementBuilder.append(removeComment(lines.get(startPos)));
 		startPos++;
 
-		while (IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) >= indentedSpaceCount + 4) {
+		while (IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4) {
 			statementBuilder.append(removeComment(lines.get(startPos)));
 			startPos++;
 		}
@@ -710,7 +707,8 @@ public class TaskExecutor {
 	private static void processPath(Path inputFilePath, Path outputPath) {
 
 		try {
-			String formattedJava = formatter.formatSource(new String(Files.readAllBytes(inputFilePath)));
+
+			String formattedJava = formatter.format(new String(Files.readAllBytes(inputFilePath)));
 			predicateInfoList = new ArrayList<>();
 			List<String> updatedLines = process(Arrays.asList(formattedJava.split("\n")));
 
@@ -720,12 +718,12 @@ public class TaskExecutor {
 				codeBuilder.append(line);
 				codeBuilder.append("\n");
 			}
-			String formattedUpdatedCode = formatter.formatSource(codeBuilder.toString());
+			String formattedUpdatedCode = formatter.format(codeBuilder.toString());
 			saveUpdatedCode(formattedUpdatedCode, inputFilePath);
 
 			// Creating the predicates file
 			PredicateRecorder.create(inputFilePath, outputPath, predicateInfoList);
-		} catch (FormatterException | IOException exception) {
+		} catch (IOException exception) {
 			System.out.println("Error formatting the code. File: " + inputFilePath.toString() + ", Reason: "
 					+ exception.getLocalizedMessage());
 		}
