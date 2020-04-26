@@ -58,13 +58,13 @@ public class TaskExecutor {
 
 		// The statement might be present in multiple lines, thus merging all
 		StringBuilder statementBuilder = new StringBuilder();
-		statementBuilder.append(removeComment(lines.get(startPos)));
+		statementBuilder.append(removeSingleLineComment(lines.get(startPos)));
 		startPos++;
 
 		while (startPos < totalLines && (lines.get(startPos).trim().startsWith("//")
 				|| lines.get(startPos).trim().startsWith("/*") || lines.get(startPos).trim().startsWith("*")
 				|| IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4)) {
-			statementBuilder.append(removeComment(lines.get(startPos)));
+			statementBuilder.append(removeSingleLineComment(lines.get(startPos)));
 			startPos++;
 		}
 
@@ -129,13 +129,13 @@ public class TaskExecutor {
 
 		// The statement might be present in multiple lines, thus merging all
 		StringBuilder statementBuilder = new StringBuilder();
-		statementBuilder.append(removeComment(lines.get(startPos)));
+		statementBuilder.append(removeSingleLineComment(lines.get(startPos)));
 		startPos++;
 
 		while (startPos < totalLines && (lines.get(startPos).trim().startsWith("//")
 				|| lines.get(startPos).trim().startsWith("/*") || lines.get(startPos).trim().startsWith("*")
 				|| IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4)) {
-			statementBuilder.append(removeComment(lines.get(startPos)));
+			statementBuilder.append(removeSingleLineComment(lines.get(startPos)));
 			startPos++;
 		}
 
@@ -211,14 +211,14 @@ public class TaskExecutor {
 
 		// The statement might be present in multiple lines, thus merging all
 		StringBuilder statementBuilder = new StringBuilder();
-		statementBuilder.append(removeComment(lines.get(bodyLineCounter)));
+		statementBuilder.append(removeSingleLineComment(lines.get(bodyLineCounter)));
 		bodyLineCounter++;
 
 		while (bodyLineCounter < totalLines && (lines.get(bodyLineCounter).trim().startsWith("//")
 				|| lines.get(bodyLineCounter).trim().startsWith("/*")
 				|| lines.get(bodyLineCounter).trim().startsWith("*")
 				|| IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) > indentedSpaceCount + 4)) {
-			statementBuilder.append(removeComment(lines.get(bodyLineCounter)));
+			statementBuilder.append(removeSingleLineComment(lines.get(bodyLineCounter)));
 			bodyLineCounter++;
 		}
 
@@ -238,13 +238,21 @@ public class TaskExecutor {
 	 * @param line The line
 	 * @return The stripped line
 	 */
-	private static String removeComment(String line) {
+	private static String removeSingleLineComment(String line) {
 
 		line = line.trim();
 		if (line.contains("//")) {
 			return line.substring(0, line.lastIndexOf("//")).trim();
 		}
 		return line;
+	}
+
+	/**
+	 * Removes multi-line comments from the code
+	 */
+	private static String removeMultilineComment(String code) {
+
+		return code.replaceAll("/\\*[^~]*\\*/", "");
 	}
 
 	/**
@@ -265,17 +273,17 @@ public class TaskExecutor {
 
 		// The statement might be present in multiple lines, thus merging all
 		StringBuilder statementBuilder = new StringBuilder();
-		statementBuilder.append(removeComment(lines.get(startPos)));
+		statementBuilder.append(removeSingleLineComment(lines.get(startPos)));
 		startPos++;
 
 		while (startPos < totalLines && (lines.get(startPos).trim().startsWith("//")
-				|| lines.get(startPos).trim().startsWith("/*") || lines.get(startPos).trim().startsWith("*")
 				|| IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4)) {
-			statementBuilder.append(removeComment(lines.get(startPos)));
+			statementBuilder.append(removeSingleLineComment(lines.get(startPos)));
 			startPos++;
 		}
 
-		PredicateInfo predicateInfo = PredicateParser.processIfStatement(statementBuilder.toString());
+		String statement = removeMultilineComment(statementBuilder.toString());
+		PredicateInfo predicateInfo = PredicateParser.processIfStatement(statement);
 
 		if (predicateInfo != null) {
 			predicateInfoList.add(predicateInfo);
@@ -341,18 +349,17 @@ public class TaskExecutor {
 
 			// The statement might be present in multiple lines, thus merging all
 			StringBuilder statementBuilder = new StringBuilder();
-			statementBuilder.append(removeComment(lines.get(bodyLineCounter)));
+			statementBuilder.append(removeSingleLineComment(lines.get(bodyLineCounter)));
 			bodyLineCounter++;
 
 			while (bodyLineCounter < totalLines && (lines.get(bodyLineCounter).trim().startsWith("//")
-					|| lines.get(bodyLineCounter).trim().startsWith("/*")
-					|| lines.get(bodyLineCounter).trim().startsWith("*")
 					|| IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) > indentedSpaceCount + 4)) {
-				statementBuilder.append(removeComment(lines.get(bodyLineCounter)));
+				statementBuilder.append(removeSingleLineComment(lines.get(bodyLineCounter)));
 				bodyLineCounter++;
 			}
 
-			PredicateInfo predicateInfo = PredicateParser.processElseIfStatement(statementBuilder.toString());
+			String statement = removeMultilineComment(statementBuilder.toString());
+			PredicateInfo predicateInfo = PredicateParser.processElseIfStatement(statement);
 
 			if (predicateInfo != null) {
 				predicateInfoList.add(predicateInfo);
@@ -411,7 +418,7 @@ public class TaskExecutor {
 
 		// The statement might be present in multiple lines, thus merging all
 		StringBuilder statementBuilder = new StringBuilder();
-		statementBuilder.append(removeComment(lines.get(startPos)));
+		statementBuilder.append(removeSingleLineComment(lines.get(startPos)));
 		startPos++;
 
 		int comparisonSpace = isReturnStatement ? indentedSpaceCount - 1 : indentedSpaceCount;
@@ -419,7 +426,7 @@ public class TaskExecutor {
 		while (startPos < totalLines && (lines.get(startPos).trim().startsWith("//")
 				|| lines.get(startPos).trim().startsWith("/*") || lines.get(startPos).trim().startsWith("*")
 				|| IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > comparisonSpace)) {
-			statementBuilder.append(removeComment(lines.get(startPos)));
+			statementBuilder.append(removeSingleLineComment(lines.get(startPos)));
 			startPos++;
 		}
 
@@ -566,13 +573,13 @@ public class TaskExecutor {
 
 		// The statement might be present in multiple lines, thus merging all
 		StringBuilder statementBuilder = new StringBuilder();
-		statementBuilder.append(removeComment(lines.get(startPos)));
+		statementBuilder.append(removeSingleLineComment(lines.get(startPos)));
 		startPos++;
 
 		while (startPos < totalLines && (lines.get(startPos).trim().startsWith("//")
 				|| lines.get(startPos).trim().startsWith("/*") || lines.get(startPos).trim().startsWith("*")
 				|| IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4)) {
-			statementBuilder.append(removeComment(lines.get(startPos)));
+			statementBuilder.append(removeSingleLineComment(lines.get(startPos)));
 			startPos++;
 		}
 
@@ -687,18 +694,8 @@ public class TaskExecutor {
 		int totalLines = lines.size();
 
 		for (int i = 0; i < totalLines; i++) {
-			if (lines.get(i).trim().startsWith(Keywords.FOR)) {
-				i = processForLoop(lines, updatedLines, i, totalLines);
-			} else if (lines.get(i).trim().startsWith(Keywords.WHILE)) {
-				i = processWhileLoop(lines, updatedLines, i, totalLines);
-			} else if (lines.get(i).trim().startsWith(Keywords.DO)) {
-				i = processDoWhileLoop(lines, updatedLines, i, totalLines);
-			} else if (lines.get(i).trim().startsWith(Keywords.IF)) {
+			if (lines.get(i).trim().startsWith(Keywords.IF)) {
 				i = processIfElseifElse(lines, updatedLines, i, totalLines);
-			} else if (lines.get(i).trim().matches("^(\\w+ )?\\w+ \\=.*")) {
-				i = processTernaryAssignmentIfFound(lines, updatedLines, i, totalLines, false);
-			} else if (lines.get(i).trim().matches("^return.*")) {
-				i = processTernaryAssignmentIfFound(lines, updatedLines, i, totalLines, true);
 			} else {
 				updatedLines.add(lines.get(i));
 			}
@@ -743,6 +740,7 @@ public class TaskExecutor {
 				codeBuilder.append(line);
 				codeBuilder.append("\n");
 			}
+			System.out.println(codeBuilder.toString());
 			String formattedUpdatedCode = gooleFormatter.formatSource(codeBuilder.toString());
 			saveUpdatedCode(formattedUpdatedCode, inputFilePath);
 
