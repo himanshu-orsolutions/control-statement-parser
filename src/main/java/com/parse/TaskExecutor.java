@@ -724,7 +724,6 @@ public class TaskExecutor {
 				codeBuilder.append(line);
 				codeBuilder.append("\n");
 			}
-			System.out.println(codeBuilder.toString());
 			String formattedUpdatedCode = gooleFormatter.formatSource(codeBuilder.toString());
 			saveUpdatedCode(formattedUpdatedCode, inputFilePath);
 
