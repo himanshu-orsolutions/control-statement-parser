@@ -61,10 +61,13 @@ public class TaskExecutor {
 		statementBuilder.append(removeComment(lines.get(startPos)));
 		startPos++;
 
-		while (startPos < totalLines
-				&& IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4) {
-			statementBuilder.append(removeComment(lines.get(startPos)));
+		String statementLine = lines.get(startPos);
+		while (startPos < totalLines && (statementLine.trim().startsWith("//") || statementLine.trim().startsWith("/*")
+				|| statementLine.trim().startsWith("*")
+				|| IndentSpaceParser.getIndentSpacesCount(statementLine) > indentedSpaceCount + 4)) {
+			statementBuilder.append(removeComment(statementLine));
 			startPos++;
+			statementLine = lines.get(startPos);
 		}
 
 		PredicateInfo predicateInfo = PredicateParser.processForStatement(statementBuilder.toString());
@@ -131,10 +134,13 @@ public class TaskExecutor {
 		statementBuilder.append(removeComment(lines.get(startPos)));
 		startPos++;
 
-		while (startPos < totalLines
-				&& IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4) {
-			statementBuilder.append(removeComment(lines.get(startPos)));
+		String statementLine = lines.get(startPos);
+		while (startPos < totalLines && (statementLine.trim().startsWith("//") || statementLine.trim().startsWith("/*")
+				|| statementLine.trim().startsWith("*")
+				|| IndentSpaceParser.getIndentSpacesCount(statementLine) > indentedSpaceCount + 4)) {
+			statementBuilder.append(removeComment(statementLine));
 			startPos++;
+			statementLine = lines.get(startPos);
 		}
 
 		PredicateInfo predicateInfo = PredicateParser.processWhileStatement(statementBuilder.toString());
@@ -212,10 +218,13 @@ public class TaskExecutor {
 		statementBuilder.append(removeComment(lines.get(bodyLineCounter)));
 		bodyLineCounter++;
 
-		while (bodyLineCounter < totalLines
-				&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) > indentedSpaceCount + 4) {
-			statementBuilder.append(removeComment(lines.get(bodyLineCounter)));
+		String statementLine = lines.get(bodyLineCounter);
+		while (bodyLineCounter < totalLines && (statementLine.trim().startsWith("//")
+				|| statementLine.trim().startsWith("/*") || statementLine.trim().startsWith("*")
+				|| IndentSpaceParser.getIndentSpacesCount(statementLine) > indentedSpaceCount + 4)) {
+			statementBuilder.append(removeComment(statementLine));
 			bodyLineCounter++;
+			statementLine = lines.get(bodyLineCounter);
 		}
 
 		PredicateInfo predicateInfo = PredicateParser.processDoWhileStatement(statementBuilder.toString());
@@ -264,10 +273,13 @@ public class TaskExecutor {
 		statementBuilder.append(removeComment(lines.get(startPos)));
 		startPos++;
 
-		while (startPos < totalLines
-				&& IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4) {
-			statementBuilder.append(removeComment(lines.get(startPos)));
+		String statementLine = lines.get(startPos);
+		while (startPos < totalLines && (statementLine.trim().startsWith("//") || statementLine.trim().startsWith("/*")
+				|| statementLine.trim().startsWith("*")
+				|| IndentSpaceParser.getIndentSpacesCount(statementLine) > indentedSpaceCount + 4)) {
+			statementBuilder.append(removeComment(statementLine));
 			startPos++;
+			statementLine = lines.get(startPos);
 		}
 
 		PredicateInfo predicateInfo = PredicateParser.processIfStatement(statementBuilder.toString());
@@ -339,10 +351,13 @@ public class TaskExecutor {
 			statementBuilder.append(removeComment(lines.get(bodyLineCounter)));
 			bodyLineCounter++;
 
-			while (bodyLineCounter < totalLines
-					&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) > indentedSpaceCount + 4) {
-				statementBuilder.append(removeComment(lines.get(bodyLineCounter)));
+			String statementLine = lines.get(bodyLineCounter);
+			while (bodyLineCounter < totalLines && (statementLine.trim().trim().startsWith("//")
+					|| statementLine.trim().startsWith("/*") || statementLine.startsWith("*")
+					|| IndentSpaceParser.getIndentSpacesCount(statementLine) > indentedSpaceCount + 4)) {
+				statementBuilder.append(removeComment(statementLine));
 				bodyLineCounter++;
+				statementLine = lines.get(bodyLineCounter);
 			}
 
 			PredicateInfo predicateInfo = PredicateParser.processElseIfStatement(statementBuilder.toString());
@@ -408,9 +423,14 @@ public class TaskExecutor {
 		startPos++;
 
 		int comparisonSpace = isReturnStatement ? indentedSpaceCount - 1 : indentedSpaceCount;
-		while (startPos < totalLines && IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > comparisonSpace) {
-			statementBuilder.append(removeComment(lines.get(startPos)));
+
+		String statementLine = lines.get(startPos);
+		while (startPos < totalLines && (statementLine.trim().startsWith("//") || statementLine.trim().startsWith("/*")
+				|| statementLine.trim().startsWith("*")
+				|| IndentSpaceParser.getIndentSpacesCount(statementLine) > comparisonSpace)) {
+			statementBuilder.append(removeComment(statementLine));
 			startPos++;
+			statementLine = lines.get(startPos);
 		}
 
 		PredicateInfo predicateInfo = isReturnStatement
@@ -559,9 +579,13 @@ public class TaskExecutor {
 		statementBuilder.append(removeComment(lines.get(startPos)));
 		startPos++;
 
-		while (IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4) {
-			statementBuilder.append(removeComment(lines.get(startPos)));
+		String statementLine = lines.get(startPos);
+		while (startPos < totalLines && (statementLine.trim().startsWith("//") || statementLine.trim().startsWith("/*")
+				|| statementLine.trim().startsWith("*")
+				|| IndentSpaceParser.getIndentSpacesCount(statementLine) > indentedSpaceCount + 4)) {
+			statementBuilder.append(removeComment(statementLine));
 			startPos++;
+			statementLine = lines.get(startPos);
 		}
 
 		String firstOperand = PredicateParser.getSwitchFirstOperand(statementBuilder.toString());
@@ -569,13 +593,22 @@ public class TaskExecutor {
 
 			List<String> innerBodyLines = new ArrayList<>();
 			int bodyLineCounter = startPos;
+			int count = 1;
 			while (bodyLineCounter < totalLines) {
 				String line = lines.get(bodyLineCounter);
 				if (StringUtils.isNotBlank(line.trim())) {
 					if (!StringUtils.equals(spaces + line.trim(), spaces + "}")) {
+						if (line.trim().endsWith("{")) {
+							count++;
+						}
 						innerBodyLines.add(line);
 					} else {
-						break;
+						count--;
+						if (count == 0) {
+							break;
+						} else {
+							innerBodyLines.add(line);
+						}
 					}
 				}
 				bodyLineCounter++;

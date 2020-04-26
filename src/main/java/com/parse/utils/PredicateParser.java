@@ -69,7 +69,7 @@ public class PredicateParser {
 	/**
 	 * The switch case pattern
 	 */
-	private static final Pattern SWITCH_CASE_PATTERN = Pattern.compile("case (.*)\\:");
+	private static final Pattern SWITCH_CASE_PATTERN = Pattern.compile("[case|default]( .*)?\\:");
 
 	private PredicateParser() {
 		// Its a utility class. Thus instantiation is not allowed.
@@ -431,24 +431,25 @@ public class PredicateParser {
 				Matcher matcher = SWITCH_CASE_PATTERN.matcher(line.trim());
 				String operand = "";
 				if (matcher.find()) {
-					operand = matcher.group(1);
-				}
+					operand = matcher.group(1) == null ? "" : matcher.group(1).trim();
+					List<String> body = new ArrayList<>();
+					boolean withBreak = false;
 
-				List<String> body = new ArrayList<>();
-				boolean withBreak = false;
-
-				lineCounter++;
-				while (lineCounter < totalInnerBodyLines
-						&& IndentSpaceParser.getIndentSpacesCount(switchBodyLines.get(lineCounter)) > spaceCount) {
-					if (switchBodyLines.get(lineCounter).trim().equals("break;")) {
-						withBreak = true;
+					lineCounter++;
+					while (lineCounter < totalInnerBodyLines
+							&& IndentSpaceParser.getIndentSpacesCount(switchBodyLines.get(lineCounter)) > spaceCount) {
+						if (switchBodyLines.get(lineCounter).trim().equals("break;")) {
+							withBreak = true;
+							lineCounter++;
+							break;
+						}
+						body.add(switchBodyLines.get(lineCounter));
 						lineCounter++;
-						break;
 					}
-					body.add(switchBodyLines.get(lineCounter));
+					cases.add(new Case(operand, body, withBreak));
+				} else {
 					lineCounter++;
 				}
-				cases.add(new Case(operand, body, withBreak));
 			}
 		}
 		return cases;
