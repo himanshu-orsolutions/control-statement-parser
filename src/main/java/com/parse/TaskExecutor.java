@@ -699,8 +699,6 @@ public class TaskExecutor {
 				i = processTernaryAssignmentIfFound(lines, updatedLines, i, totalLines, false);
 			} else if (lines.get(i).trim().matches("^return.*")) {
 				i = processTernaryAssignmentIfFound(lines, updatedLines, i, totalLines, true);
-			} else if (lines.get(i).trim().startsWith(Keywords.SWITCH)) {
-				i = processSwitchStatements(lines, updatedLines, i, totalLines);
 			} else {
 				updatedLines.add(lines.get(i));
 			}
