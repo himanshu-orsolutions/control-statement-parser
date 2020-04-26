@@ -34,7 +34,11 @@
 			<version>3.21.0</version>
 		</dependency>
 
-
+		<dependency>
+			<groupId>com.google.googlejavaformat</groupId>
+			<artifactId>google-java-format</artifactId>
+			<version>1.7</version>
+		</dependency>
 
 	</dependencies>
 

@@ -14,6 +14,10 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.google.googlejavaformat.java.Formatter;
+import com.google.googlejavaformat.java.FormatterException;
+import com.google.googlejavaformat.java.JavaFormatterOptions;
+import com.google.googlejavaformat.java.JavaFormatterOptions.Style;
 import com.parse.constants.Keywords;
 import com.parse.models.Case;
 import com.parse.models.OperandType;
@@ -27,6 +31,8 @@ import com.parse.utils.PredicateRecorder;
  * The controller TaskExecutor. It holds the control of the application.
  */
 public class TaskExecutor {
+
+	private static Formatter gooleFormatter = new Formatter(JavaFormatterOptions.builder().style(Style.GOOGLE).build());
 
 	private static JavaFormatter formatter = new JavaFormatter();
 
@@ -718,12 +724,12 @@ public class TaskExecutor {
 				codeBuilder.append(line);
 				codeBuilder.append("\n");
 			}
-			String formattedUpdatedCode = formatter.format(codeBuilder.toString());
+			String formattedUpdatedCode = gooleFormatter.formatSource(codeBuilder.toString());
 			saveUpdatedCode(formattedUpdatedCode, inputFilePath);
 
 			// Creating the predicates file
 			PredicateRecorder.create(inputFilePath, outputPath, predicateInfoList);
-		} catch (IOException exception) {
+		} catch (IOException | FormatterException exception) {
 			System.out.println("Error formatting the code. File: " + inputFilePath.toString() + ", Reason: "
 					+ exception.getLocalizedMessage());
 		}
