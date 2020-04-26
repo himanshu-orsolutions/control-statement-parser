@@ -234,22 +234,63 @@ public class PredicateParser {
 		ReplacementInfo replacementInfo = replaceStrings(statement);
 		Matcher matcher = TERNARY_STATEMENT_PATTERN_INIT.matcher(replacementInfo.getUpdatedString());
 		if (matcher.find()) {
-			String control = matcher.group(3);
-			// Reverting back the replacements in predicate
-			for (Entry<String, String> entry : replacementInfo.getReplacementMap().entrySet()) {
-				control = control.replaceAll(entry.getKey(), entry.getValue());
-			}
+			String updatedString = replacementInfo.getUpdatedString();
+			int refIndex = updatedString.indexOf("?");
+			if (!areBracketsEqual(updatedString.substring(0, refIndex))) { // The ternary statement is present inside
+																			// parenthesis
+				StringBuilder statementBuilder = new StringBuilder();
+				statementBuilder.append(" )");
+				int count = 1;
+				int index = refIndex - 2;
+				while (index >= 0 && count != 0) {
+					char ch = updatedString.charAt(index);
+					if (ch == '(') {
+						count--;
+					} else if (ch == ')') {
+						count++;
+					}
+					index--;
+					statementBuilder.append(ch);
+				}
+				index++;
 
-			String predicateName = "P_" + predicateCounter.getAndIncrement();
-			String parentStatement = StringUtils.join(matcher.group(1), predicateName, matcher.group(4));
-			// Reverting back the replacements in predicate
-			for (Entry<String, String> entry : replacementInfo.getReplacementMap().entrySet()) {
-				parentStatement = parentStatement.replaceAll(entry.getKey(), entry.getValue());
-			}
+				String control = statementBuilder.reverse().toString();
 
-			return new PredicateInfo(predicateName, control, "TERNARY",
-					StringUtils.join("boolean", " ", predicateName, "=", control, ";"),
-					StringUtils.join(predicateName, "=", control, ";"), parentStatement, null, null);
+				// Reverting back the replacements in predicate
+				for (Entry<String, String> entry : replacementInfo.getReplacementMap().entrySet()) {
+					control = control.replaceAll(entry.getKey(), entry.getValue());
+				}
+
+				String predicateName = "P_" + predicateCounter.getAndIncrement();
+				String parentStatement = StringUtils.join(updatedString.substring(0, index + 1), predicateName,
+						updatedString.substring(refIndex));
+				// Reverting back the replacements in predicate
+				for (Entry<String, String> entry : replacementInfo.getReplacementMap().entrySet()) {
+					parentStatement = parentStatement.replaceAll(entry.getKey(), entry.getValue());
+				}
+
+				return new PredicateInfo(predicateName, control, "TERNARY",
+						StringUtils.join("boolean", " ", predicateName, "=", control, ";"),
+						StringUtils.join(predicateName, "=", control, ";"), parentStatement, null, null);
+
+			} else {
+				String control = matcher.group(2);
+				// Reverting back the replacements in predicate
+				for (Entry<String, String> entry : replacementInfo.getReplacementMap().entrySet()) {
+					control = control.replaceAll(entry.getKey(), entry.getValue());
+				}
+
+				String predicateName = "P_" + predicateCounter.getAndIncrement();
+				String parentStatement = StringUtils.join(matcher.group(1), predicateName, matcher.group(3));
+				// Reverting back the replacements in predicate
+				for (Entry<String, String> entry : replacementInfo.getReplacementMap().entrySet()) {
+					parentStatement = parentStatement.replaceAll(entry.getKey(), entry.getValue());
+				}
+
+				return new PredicateInfo(predicateName, control, "TERNARY",
+						StringUtils.join("boolean", " ", predicateName, "=", control, ";"),
+						StringUtils.join(predicateName, "=", control, ";"), parentStatement, null, null);
+			}
 		}
 		return null;
 	}
@@ -294,7 +335,7 @@ public class PredicateParser {
 				StringBuilder statementBuilder = new StringBuilder();
 				statementBuilder.append(" )");
 				int count = 1;
-				int index = refIndex - 3;
+				int index = refIndex - 2;
 				while (index >= 0 && count != 0) {
 					char ch = updatedString.charAt(index);
 					if (ch == '(') {
