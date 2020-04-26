@@ -368,14 +368,14 @@ public class PredicateParser {
 						StringUtils.join(predicateName, "=", control, ";"), parentStatement, null, null);
 
 			} else {
-				String control = matcher.group(3);
+				String control = matcher.group(2);
 				// Reverting back the replacements in predicate
 				for (Entry<String, String> entry : replacementInfo.getReplacementMap().entrySet()) {
 					control = control.replaceAll(entry.getKey(), entry.getValue());
 				}
 
 				String predicateName = "P_" + predicateCounter.getAndIncrement();
-				String parentStatement = StringUtils.join(matcher.group(1), predicateName, matcher.group(4));
+				String parentStatement = StringUtils.join(matcher.group(1), predicateName, matcher.group(3));
 				// Reverting back the replacements in predicate
 				for (Entry<String, String> entry : replacementInfo.getReplacementMap().entrySet()) {
 					parentStatement = parentStatement.replaceAll(entry.getKey(), entry.getValue());
