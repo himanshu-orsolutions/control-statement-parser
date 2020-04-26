@@ -101,7 +101,7 @@ public class TaskExecutor {
 
 		if (bodyLineCounter < totalLines
 				&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) == indentedSpaceCount
-				&& lines.get(bodyLineCounter).trim().equals("}")) {
+				&& lines.get(bodyLineCounter).trim().matches("}( //.*)?")) {
 			updatedLines.add(lines.get(bodyLineCounter));
 		} else {
 			bodyLineCounter--;
@@ -165,7 +165,7 @@ public class TaskExecutor {
 
 		if (bodyLineCounter < totalLines
 				&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) == indentedSpaceCount
-				&& lines.get(bodyLineCounter).trim().equals("}")) {
+				&& lines.get(bodyLineCounter).trim().matches("}( //.*)?")) {
 			updatedLines.add(lines.get(bodyLineCounter));
 		} else {
 			bodyLineCounter--;
@@ -296,7 +296,7 @@ public class TaskExecutor {
 		if (bodyLineCounter < totalLines
 				&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) == indentedSpaceCount) {
 			String line = lines.get(bodyLineCounter).trim();
-			if (line.equals("}")) {
+			if (line.matches("}( //.*)?")) {
 				updatedLines.add("}");
 				return bodyLineCounter;
 			} else {
@@ -371,7 +371,7 @@ public class TaskExecutor {
 			if (bodyLineCounter < totalLines
 					&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) == indentedSpaceCount) {
 				line = lines.get(bodyLineCounter).trim();
-				if (line.equals("}")) {
+				if (line.matches("}( //.*)?")) {
 					updatedLines.add("}");
 					return bodyLineCounter;
 				} else {
@@ -470,7 +470,7 @@ public class TaskExecutor {
 			if (bodyLineCounter < totalLines
 					&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) == indentedSpaceCount) {
 				line = lines.get(bodyLineCounter).trim();
-				if (line.equals("}")) {
+				if (line.matches("}( //.*)?")) {
 					updatedLines.add("}");
 					return bodyLineCounter;
 				} else {
