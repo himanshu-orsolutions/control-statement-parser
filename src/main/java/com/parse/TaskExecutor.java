@@ -71,7 +71,8 @@ public class TaskExecutor {
 			startPos++;
 		}
 
-		PredicateInfo predicateInfo = PredicateParser.processForStatement(statementBuilder.toString());
+		String statement = removeMultilineComment(statementBuilder.toString());
+		PredicateInfo predicateInfo = PredicateParser.processForStatement(statement);
 
 		if (predicateInfo != null) {
 			predicateInfoList.add(predicateInfo);
@@ -142,7 +143,8 @@ public class TaskExecutor {
 			startPos++;
 		}
 
-		PredicateInfo predicateInfo = PredicateParser.processWhileStatement(statementBuilder.toString());
+		String statement = removeMultilineComment(statementBuilder.toString());
+		PredicateInfo predicateInfo = PredicateParser.processWhileStatement(statement);
 
 		if (predicateInfo != null) {
 			predicateInfoList.add(predicateInfo);
@@ -225,7 +227,8 @@ public class TaskExecutor {
 			bodyLineCounter++;
 		}
 
-		PredicateInfo predicateInfo = PredicateParser.processDoWhileStatement(statementBuilder.toString());
+		String statement = removeMultilineComment(statementBuilder.toString());
+		PredicateInfo predicateInfo = PredicateParser.processDoWhileStatement(statement);
 		if (predicateInfo != null) {
 			predicateInfoList.add(predicateInfo);
 			updatedLines.add(spaces + "\t" + predicateInfo.getReuseStatement());
@@ -748,7 +751,13 @@ public class TaskExecutor {
 		int totalLines = lines.size();
 
 		for (int i = 0; i < totalLines; i++) {
-			if (lines.get(i).trim().startsWith(Keywords.IF)) {
+			if (lines.get(i).trim().startsWith(Keywords.FOR)) {
+				i = processForLoop(lines, updatedLines, i, totalLines);
+			} else if (lines.get(i).trim().startsWith(Keywords.WHILE)) {
+				i = processWhileLoop(lines, updatedLines, i, totalLines);
+			} else if (lines.get(i).trim().startsWith(Keywords.DO)) {
+				i = processDoWhileLoop(lines, updatedLines, i, totalLines);
+			} else if (lines.get(i).trim().startsWith(Keywords.IF)) {
 				i = processIfElseifElse(lines, updatedLines, i, totalLines);
 			} else if (lines.get(i).trim().matches("^(final )?\\w+ [\\w_]+\\;$")) {
 				updatedLines.add(processInitializationStatement(lines.get(i)));
