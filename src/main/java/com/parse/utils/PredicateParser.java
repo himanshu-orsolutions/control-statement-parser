@@ -76,6 +76,62 @@ public class PredicateParser {
 	}
 
 	/**
+	 * Processes the var initialization statement
+	 * 
+	 * @param statement The statement
+	 * @return The processed statement
+	 */
+	private static String processVarInitializationStatement(String statement) {
+
+		if (statement.trim().matches("^[\\w_]+ [\\w_]+ \\=.*")) {
+			return statement + ";";
+		} else {
+			char[] chars = statement.trim().toCharArray();
+			int totalChars = chars.length;
+			int bracketCount = 0;
+			for (int i = 0; i < totalChars; i++) {
+				if (chars[i] == '(') {
+					bracketCount++;
+				} else if (chars[i] == ')') {
+					bracketCount--;
+				} else if (chars[i] == ',') {
+					if (bracketCount == 0) {
+						chars[i] = ';';
+					}
+				}
+			}
+
+			return new String(chars) + ";";
+		}
+	}
+
+	/**
+	 * Processes the var change statement
+	 * 
+	 * @param statement The statement
+	 * @return The processed statement
+	 */
+	private static String processVarChangeStatement(String statement) {
+
+		char[] chars = statement.trim().toCharArray();
+		int totalChars = chars.length;
+		int bracketCount = 0;
+		for (int i = 0; i < totalChars; i++) {
+			if (chars[i] == '(') {
+				bracketCount++;
+			} else if (chars[i] == ')') {
+				bracketCount--;
+			} else if (chars[i] == ',') {
+				if (bracketCount == 0) {
+					chars[i] = ';';
+				}
+			}
+		}
+
+		return new String(chars) + ";";
+	}
+
+	/**
 	 * Processes the 'for' statement
 	 * 
 	 * @param statement The statement
@@ -89,12 +145,16 @@ public class PredicateParser {
 			if (StringUtils.isBlank(control) || StringUtils.equals("true", control)) {
 				return null;
 			}
+
+			String varInitializationStatement = processVarInitializationStatement(matcher.group(1));
+			String varChangeStatement = processVarChangeStatement(matcher.group(3));
+
 			String predicateName = "P_" + predicateCounter.getAndIncrement();
 			return new PredicateInfo(predicateName, control, "FOR",
 					StringUtils.join("boolean", " ", predicateName, "=", control, ";"),
 					StringUtils.join(predicateName, "=", control, ";"),
-					StringUtils.join("while(", predicateName, ")", "{"), matcher.group(1) + ";",
-					matcher.group(3).replaceAll(",", ";") + ";");
+					StringUtils.join("while(", predicateName, ")", "{"), varInitializationStatement,
+					varChangeStatement);
 		}
 		return null;
 	}
