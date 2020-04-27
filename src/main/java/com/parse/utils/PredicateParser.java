@@ -90,9 +90,9 @@ public class PredicateParser {
 			int totalChars = chars.length;
 			int bracketCount = 0;
 			for (int i = 0; i < totalChars; i++) {
-				if (chars[i] == '(') {
+				if (chars[i] == '(' || chars[i] == '<' || chars[i] == '{' || chars[i] == '[') {
 					bracketCount++;
-				} else if (chars[i] == ')') {
+				} else if (chars[i] == ')' || chars[i] == '>' || chars[i] == '}' || chars[i] == ']') {
 					bracketCount--;
 				} else if (chars[i] == ',') {
 					if (bracketCount == 0) {
