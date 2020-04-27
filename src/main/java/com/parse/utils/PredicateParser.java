@@ -86,8 +86,8 @@ public class PredicateParser {
 		Matcher matcher = FOR_PATTERN.matcher(statement);
 		if (matcher.find()) {
 			String control = matcher.group(2).trim();
-			if (StringUtils.isBlank(control)) {
-				control = "true";
+			if (StringUtils.isBlank(control) || StringUtils.equals("true", control)) {
+				return null;
 			}
 			String predicateName = "P_" + predicateCounter.getAndIncrement();
 			return new PredicateInfo(predicateName, control, "FOR",
@@ -110,11 +110,13 @@ public class PredicateParser {
 		Matcher matcher = WHILE_PATTERN.matcher(statement);
 		if (matcher.find()) {
 			String control = matcher.group(2).trim();
-			String predicateName = "P_" + predicateCounter.getAndIncrement();
-			return new PredicateInfo(predicateName, control, "WHILE",
-					StringUtils.join("boolean", " ", predicateName, "=", control, ";"),
-					StringUtils.join(predicateName, "=", control, ";"),
-					StringUtils.join(matcher.group(1), predicateName, matcher.group(3), "{"), null, null);
+			if (!StringUtils.equals("true", control)) {
+				String predicateName = "P_" + predicateCounter.getAndIncrement();
+				return new PredicateInfo(predicateName, control, "WHILE",
+						StringUtils.join("boolean", " ", predicateName, "=", control, ";"),
+						StringUtils.join(predicateName, "=", control, ";"),
+						StringUtils.join(matcher.group(1), predicateName, matcher.group(3), "{"), null, null);
+			}
 		}
 		return null;
 	}
@@ -130,11 +132,13 @@ public class PredicateParser {
 		Matcher matcher = DO_WHILE_PATTERN.matcher(statement);
 		if (matcher.find()) {
 			String control = matcher.group(2).trim();
-			String predicateName = "P_" + predicateCounter.getAndIncrement();
-			return new PredicateInfo(predicateName, control, "DO-WHILE",
-					StringUtils.join("boolean", " ", predicateName, ";"),
-					StringUtils.join(predicateName, "=", control, ";"),
-					StringUtils.join(matcher.group(1), predicateName, matcher.group(3)), null, null);
+			if (!StringUtils.equals("true", control)) {
+				String predicateName = "P_" + predicateCounter.getAndIncrement();
+				return new PredicateInfo(predicateName, control, "DO-WHILE",
+						StringUtils.join("boolean", " ", predicateName, ";"),
+						StringUtils.join(predicateName, "=", control, ";"),
+						StringUtils.join(matcher.group(1), predicateName, matcher.group(3)), null, null);
+			}
 		}
 		return null;
 	}

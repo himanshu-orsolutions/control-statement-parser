@@ -81,9 +81,10 @@ public class TaskExecutor {
 			updatedLines.add(spaces + predicateInfo.getInitializationStatement());
 			updatedLines.add(spaces + predicateInfo.getParentStatement());
 		} else {
-			updatedLines.add(spaces + statementBuilder.toString());
+			updatedLines.add(spaces + statement);
 			return startPos - 1;
 		}
+
 		List<String> innerBodyLines = new ArrayList<>();
 		int bodyLineCounter = startPos;
 		while (bodyLineCounter < totalLines) {
@@ -150,7 +151,11 @@ public class TaskExecutor {
 			predicateInfoList.add(predicateInfo);
 			updatedLines.add(spaces + predicateInfo.getInitializationStatement());
 			updatedLines.add(spaces + predicateInfo.getParentStatement());
+		} else {
+			updatedLines.add(spaces + statement);
+			return startPos - 1;
 		}
+
 		List<String> innerBodyLines = new ArrayList<>();
 		int bodyLineCounter = startPos;
 		while (bodyLineCounter < totalLines) {
@@ -233,6 +238,9 @@ public class TaskExecutor {
 			predicateInfoList.add(predicateInfo);
 			updatedLines.add(spaces + "\t" + predicateInfo.getReuseStatement());
 			updatedLines.add(spaces + predicateInfo.getParentStatement());
+		} else {
+			updatedLines.add(spaces + statement);
+			return bodyLineCounter - 1;
 		}
 		updatedLines.add(pos, spaces + predicateInfo.getInitializationStatement());
 		return bodyLineCounter - 1;
@@ -805,6 +813,7 @@ public class TaskExecutor {
 				codeBuilder.append(line);
 				codeBuilder.append("\n");
 			}
+			System.out.println(codeBuilder.toString());
 			String formattedUpdatedCode = gooleFormatter.formatSource(codeBuilder.toString());
 			saveUpdatedCode(formattedUpdatedCode, inputFilePath);
 
