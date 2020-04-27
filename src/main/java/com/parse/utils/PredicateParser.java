@@ -195,7 +195,7 @@ public class PredicateParser {
 			if (!StringUtils.equals("true", control)) {
 				String predicateName = "P_" + predicateCounter.getAndIncrement();
 				return new PredicateInfo(predicateName, control, "DO-WHILE",
-						StringUtils.join("boolean", " ", predicateName, ";"),
+						StringUtils.join("boolean", " ", predicateName, " ", "=", "false;"),
 						StringUtils.join(predicateName, "=", control, ";"),
 						StringUtils.join(matcher.group(1), predicateName, matcher.group(3)), null, null);
 			}
