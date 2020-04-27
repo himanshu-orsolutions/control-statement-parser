@@ -729,7 +729,9 @@ public class TaskExecutor {
 				break;
 			}
 
-			return StringUtils.join(dataType, " ", matcher.group(2), "=", value, ";");
+			if (StringUtils.isNotBlank(value)) {
+				return StringUtils.join(dataType, " ", matcher.group(2), "=", value, ";");
+			}
 		}
 		return statement;
 	}
@@ -794,6 +796,7 @@ public class TaskExecutor {
 				codeBuilder.append(line);
 				codeBuilder.append("\n");
 			}
+			System.out.println(codeBuilder.toString());
 			String formattedUpdatedCode = gooleFormatter.formatSource(codeBuilder.toString());
 			saveUpdatedCode(formattedUpdatedCode, inputFilePath);
 
