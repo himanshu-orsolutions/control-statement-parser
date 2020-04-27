@@ -32,6 +32,7 @@ public class JavaFormatter {
 						DefaultCodeFormatterConstants.createAlignmentValue(false,
 								DefaultCodeFormatterConstants.WRAP_COMPACT,
 								DefaultCodeFormatterConstants.INDENT_DEFAULT));
+
 		// Formats custom file headers if provided
 		DEFAULT_FORMATTER_OPTIONS.put(DefaultCodeFormatterConstants.FORMATTER_COMMENT_FORMAT_HEADER,
 				DefaultCodeFormatterConstants.TRUE);

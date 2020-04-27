@@ -10,6 +10,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
@@ -36,6 +38,7 @@ public class TaskExecutor {
 
 	private static JavaFormatter formatter = new JavaFormatter();
 
+	private static final Pattern INITIALIZATION_PATTERN = Pattern.compile("^(\\w+) ([\\w_]+)\\;$");
 	/**
 	 * The list of predicate information
 	 */
@@ -688,6 +691,50 @@ public class TaskExecutor {
 	}
 
 	/**
+	 * Processes the initialization statement
+	 * 
+	 * @param statement The statement
+	 * @return The initialization statement
+	 */
+	private static String processInitializationStatement(String statement) {
+
+		Matcher matcher = INITIALIZATION_PATTERN.matcher(statement.trim());
+		if (matcher.find()) {
+			String dataType = matcher.group(1);
+			String value = "";
+			switch (dataType) {
+			case "int":
+				value = "0";
+				break;
+			case "long":
+				value = "0l";
+				break;
+			case "short":
+				value = "0";
+				break;
+			case "byte":
+				value = "0";
+				break;
+			case "float":
+				value = "0.0f";
+				break;
+			case "boolean":
+				value = "false";
+				break;
+			case "char":
+				value = "'a'";
+				break;
+			case "double":
+				value = "0d";
+				break;
+			}
+
+			return StringUtils.join(dataType, " ", matcher.group(2), "=", value, ";");
+		}
+		return statement;
+	}
+
+	/**
 	 * Processes the lines of code
 	 * 
 	 * @param lines The lines
@@ -701,6 +748,8 @@ public class TaskExecutor {
 		for (int i = 0; i < totalLines; i++) {
 			if (lines.get(i).trim().startsWith(Keywords.IF)) {
 				i = processIfElseifElse(lines, updatedLines, i, totalLines);
+			} else if (lines.get(i).trim().matches("^\\w+ [\\w_]+\\;$")) {
+				updatedLines.add(processInitializationStatement(lines.get(i)));
 			} else {
 				updatedLines.add(lines.get(i));
 			}
