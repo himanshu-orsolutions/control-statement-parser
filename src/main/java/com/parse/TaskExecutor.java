@@ -38,7 +38,7 @@ public class TaskExecutor {
 
 	private static JavaFormatter formatter = new JavaFormatter();
 
-	private static final Pattern INITIALIZATION_PATTERN = Pattern.compile("^(\\w+) ([\\w_]+)\\;$");
+	private static final Pattern INITIALIZATION_PATTERN = Pattern.compile("^(final )?(\\w+) ([\\w_]+)\\;$");
 	/**
 	 * The list of predicate information
 	 */
@@ -700,7 +700,7 @@ public class TaskExecutor {
 
 		Matcher matcher = INITIALIZATION_PATTERN.matcher(statement.trim());
 		if (matcher.find()) {
-			String dataType = matcher.group(1);
+			String dataType = matcher.group(2);
 			String value = "";
 			switch (dataType) {
 			case "int":
@@ -730,7 +730,7 @@ public class TaskExecutor {
 			}
 
 			if (StringUtils.isNotBlank(value)) {
-				return StringUtils.join(dataType, " ", matcher.group(2), "=", value, ";");
+				return StringUtils.join(dataType, " ", matcher.group(3), "=", value, ";");
 			}
 		}
 		return statement;
@@ -750,7 +750,7 @@ public class TaskExecutor {
 		for (int i = 0; i < totalLines; i++) {
 			if (lines.get(i).trim().startsWith(Keywords.IF)) {
 				i = processIfElseifElse(lines, updatedLines, i, totalLines);
-			} else if (lines.get(i).trim().matches("^\\w+ [\\w_]+\\;$")) {
+			} else if (lines.get(i).trim().matches("^(final )?\\w+ [\\w_]+\\;$")) {
 				updatedLines.add(processInitializationStatement(lines.get(i)));
 			} else {
 				updatedLines.add(lines.get(i));
