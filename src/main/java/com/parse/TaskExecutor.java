@@ -38,7 +38,7 @@ public class TaskExecutor {
 
 	private static JavaFormatter formatter = new JavaFormatter();
 
-	private static final Pattern INITIALIZATION_PATTERN = Pattern.compile("^(final )?(\\w+) ([\\w_]+)\\;$");
+	private static final Pattern INITIALIZATION_PATTERN = Pattern.compile("^(final )?(\\w+) ([\\w_]+)\\;.*");
 	/**
 	 * The list of predicate information
 	 */
