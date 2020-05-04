@@ -216,7 +216,7 @@ public class PredicateParser {
 			String control = matcher.group(2).trim();
 			String predicateName = "P_" + predicateCounter.getAndIncrement();
 			return new PredicateInfo(predicateName, control, "IF",
-					StringUtils.join("boolean", " ", predicateName, "=", control, ";"),
+					StringUtils.join("boolean", " ", predicateName, "=", "false", ";"),
 					StringUtils.join(predicateName, "=", control, ";"),
 					StringUtils.join(matcher.group(1), predicateName, matcher.group(3), "{"), null, null);
 		}
@@ -236,7 +236,7 @@ public class PredicateParser {
 			String control = matcher.group(2).trim();
 			String predicateName = "P_" + predicateCounter.getAndIncrement();
 			return new PredicateInfo(predicateName, control, "ELSE-IF",
-					StringUtils.join("boolean", " ", predicateName, "=", control, ";"),
+					StringUtils.join("boolean", " ", predicateName, "=", "false", ";"),
 					StringUtils.join(predicateName, "=", control, ";"),
 					StringUtils.join(matcher.group(1), predicateName, matcher.group(3), "{"), null, null);
 		}

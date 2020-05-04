@@ -358,6 +358,9 @@ public class TaskExecutor {
 		if (predicateInfo != null) {
 			predicateInfoList.add(predicateInfo);
 			updatedLines.add(pos++, spaces + predicateInfo.getInitializationStatement());
+			updatedLines.add(pos++, "try{");
+			updatedLines.add(pos++, predicateInfo.getReuseStatement());
+			updatedLines.add(pos++, "}catch(Exception exception){}");
 			updatedLines.add(spaces + predicateInfo.getParentStatement());
 		}
 		List<String> innerBodyLines = new ArrayList<>();
@@ -438,6 +441,9 @@ public class TaskExecutor {
 			if (predicateInfo != null) {
 				predicateInfoList.add(predicateInfo);
 				updatedLines.add(pos++, spaces + predicateInfo.getInitializationStatement());
+				updatedLines.add(pos++, "try{");
+				updatedLines.add(pos++, predicateInfo.getReuseStatement());
+				updatedLines.add(pos++, "}catch(Exception exception){}");
 				updatedLines.add(spaces + predicateInfo.getParentStatement());
 			}
 
@@ -870,6 +876,7 @@ public class TaskExecutor {
 				codeBuilder.append(line);
 				codeBuilder.append("\n");
 			}
+			System.out.println(codeBuilder.toString());
 			String formattedUpdatedCode = gooleFormatter.formatSource(codeBuilder.toString());
 			saveUpdatedCode(formattedUpdatedCode, inputFilePath);
 
