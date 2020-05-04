@@ -360,7 +360,8 @@ public class TaskExecutor {
 			updatedLines.add(pos++, spaces + predicateInfo.getInitializationStatement());
 			updatedLines.add(pos++, "try{");
 			updatedLines.add(pos++, predicateInfo.getReuseStatement());
-			updatedLines.add(pos++, "}catch(NullPointerException|ArrayIndexOutOfBoundsException exception){}");
+			updatedLines.add(pos++,
+					"}catch(NullPointerException exception){}catch(ArrayIndexOutOfBoundsException exception){}");
 			updatedLines.add(spaces + predicateInfo.getParentStatement());
 		}
 		List<String> innerBodyLines = new ArrayList<>();
@@ -443,7 +444,8 @@ public class TaskExecutor {
 				updatedLines.add(pos++, spaces + predicateInfo.getInitializationStatement());
 				updatedLines.add(pos++, "try{");
 				updatedLines.add(pos++, predicateInfo.getReuseStatement());
-				updatedLines.add(pos++, "}catch(NullPointerException|ArrayIndexOutOfBoundsException exception){}");
+				updatedLines.add(pos++,
+						"}catch(NullPointerException exception){}catch(ArrayIndexOutOfBoundsException exception){}");
 				updatedLines.add(spaces + predicateInfo.getParentStatement());
 			}
 
