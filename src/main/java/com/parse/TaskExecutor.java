@@ -360,7 +360,7 @@ public class TaskExecutor {
 			updatedLines.add(pos++, spaces + predicateInfo.getInitializationStatement());
 			updatedLines.add(pos++, "try{");
 			updatedLines.add(pos++, predicateInfo.getReuseStatement());
-			updatedLines.add(pos++, "}catch(Exception exception){}");
+			updatedLines.add(pos++, "}catch(NullPointerException exception){}");
 			updatedLines.add(spaces + predicateInfo.getParentStatement());
 		}
 		List<String> innerBodyLines = new ArrayList<>();
@@ -443,7 +443,7 @@ public class TaskExecutor {
 				updatedLines.add(pos++, spaces + predicateInfo.getInitializationStatement());
 				updatedLines.add(pos++, "try{");
 				updatedLines.add(pos++, predicateInfo.getReuseStatement());
-				updatedLines.add(pos++, "}catch(Exception exception){}");
+				updatedLines.add(pos++, "}catch(NullPointerException exception){}");
 				updatedLines.add(spaces + predicateInfo.getParentStatement());
 			}
 
