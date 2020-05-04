@@ -64,9 +64,10 @@ public class TaskExecutor {
 		statementBuilder.append(removeSingleLineComment(lines.get(startPos)));
 		startPos++;
 
-		while (startPos < totalLines && (lines.get(startPos).trim().startsWith("//")
-				|| lines.get(startPos).trim().startsWith("/*") || lines.get(startPos).trim().startsWith("*")
-				|| IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4)) {
+		while (startPos < totalLines && !lines.get(startPos).trim().startsWith("}")
+				&& (lines.get(startPos).trim().startsWith("//") || lines.get(startPos).trim().startsWith("/*")
+						|| lines.get(startPos).trim().startsWith("*")
+						|| IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4)) {
 			statementBuilder.append(removeSingleLineComment(lines.get(startPos)));
 			startPos++;
 		}
@@ -90,7 +91,7 @@ public class TaskExecutor {
 		while (bodyLineCounter < totalLines) {
 			String line = lines.get(bodyLineCounter);
 			if (StringUtils.isNotBlank(line.trim())) {
-				if (line.startsWith("//") || IndentSpaceParser.getIndentSpacesCount(line) > indentedSpaceCount) {
+				if (line.startsWith("//") || IndentSpaceParser.getIndentSpacesCount(line) != indentedSpaceCount) {
 					innerBodyLines.add(line);
 				} else {
 					break;
@@ -137,9 +138,10 @@ public class TaskExecutor {
 		statementBuilder.append(removeSingleLineComment(lines.get(startPos)));
 		startPos++;
 
-		while (startPos < totalLines && (lines.get(startPos).trim().startsWith("//")
-				|| lines.get(startPos).trim().startsWith("/*") || lines.get(startPos).trim().startsWith("*")
-				|| IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4)) {
+		while (startPos < totalLines && !lines.get(startPos).trim().startsWith("}")
+				&& (lines.get(startPos).trim().startsWith("//") || lines.get(startPos).trim().startsWith("/*")
+						|| lines.get(startPos).trim().startsWith("*")
+						|| IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) != indentedSpaceCount + 4)) {
 			statementBuilder.append(removeSingleLineComment(lines.get(startPos)));
 			startPos++;
 		}
@@ -224,10 +226,10 @@ public class TaskExecutor {
 		statementBuilder.append(removeSingleLineComment(lines.get(bodyLineCounter)));
 		bodyLineCounter++;
 
-		while (bodyLineCounter < totalLines && (lines.get(bodyLineCounter).trim().startsWith("//")
-				|| lines.get(bodyLineCounter).trim().startsWith("/*")
+		while (bodyLineCounter < totalLines && !lines.get(bodyLineCounter).trim().startsWith("}") && (lines
+				.get(bodyLineCounter).trim().startsWith("//") || lines.get(bodyLineCounter).trim().startsWith("/*")
 				|| lines.get(bodyLineCounter).trim().startsWith("*")
-				|| IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) > indentedSpaceCount + 4)) {
+				|| IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) != indentedSpaceCount + 4)) {
 			statementBuilder.append(removeSingleLineComment(lines.get(bodyLineCounter)));
 			bodyLineCounter++;
 		}
@@ -254,11 +256,29 @@ public class TaskExecutor {
 	 */
 	private static String removeSingleLineComment(String line) {
 
-		line = line.trim();
-		if (line.contains("//")) {
-			return line.substring(0, line.lastIndexOf("//")).trim();
+		char[] chars = line.toCharArray();
+		int counter = 0;
+		int totalChars = chars.length;
+		StringBuilder codeBuilder = new StringBuilder();
+		while (counter < totalChars) {
+			if (chars[counter] == '"') {
+				codeBuilder.append(chars[counter++]);
+				while (counter < totalChars) {
+					codeBuilder.append(chars[counter]);
+					if (chars[counter] == '"' && counter - 1 >= 0 && chars[counter - 1] != '\\') {
+						break;
+					}
+					counter++;
+				}
+			} else if (chars[counter] == '/' && counter + 1 < totalChars && chars[counter + 1] == '/') {
+				break;
+			} else {
+				codeBuilder.append(chars[counter]);
+			}
+			counter++;
 		}
-		return line;
+
+		return codeBuilder.toString();
 	}
 
 	/**
@@ -266,7 +286,41 @@ public class TaskExecutor {
 	 */
 	private static String removeMultilineComment(String code) {
 
-		return code.replaceAll("/\\*[^~]*\\*/", "");
+		char[] chars = code.toCharArray();
+		StringBuilder codeBuilder = new StringBuilder();
+		int counter = 0;
+		int totalChars = chars.length;
+		while (counter < totalChars) {
+			if (chars[counter] == '"') {
+				codeBuilder.append(chars[counter++]);
+				while (counter < totalChars) {
+					codeBuilder.append(chars[counter]);
+					if (chars[counter] == '"' && counter - 1 >= 0 && chars[counter - 1] != '\\') {
+						break;
+					}
+					counter++;
+				}
+			} else if (chars[counter] == '/' && counter + 1 < totalChars && chars[counter + 1] == '*') {
+				while (counter < totalChars) {
+					if (chars[counter] == '"') {
+						while (counter < totalChars) {
+							if (chars[counter] == '"' && counter - 1 >= 0 && chars[counter - 1] != '\\') {
+								break;
+							}
+							counter++;
+						}
+					} else if (chars[counter] == '*' && counter + 1 < totalChars && chars[counter + 1] == '/') {
+						counter++;
+						break;
+					}
+					counter++;
+				}
+			} else {
+				codeBuilder.append(chars[counter]);
+			}
+			counter++;
+		}
+		return codeBuilder.toString();
 	}
 
 	/**
@@ -290,10 +344,10 @@ public class TaskExecutor {
 		statementBuilder.append(removeSingleLineComment(lines.get(startPos)));
 		startPos++;
 
-		while (startPos < totalLines
+		while (startPos < totalLines && !lines.get(startPos).trim().startsWith("}")
 				&& (lines.get(startPos).trim().startsWith("//") || StringUtils.isEmpty(lines.get(startPos).trim())
 						|| lines.get(startPos).trim().startsWith("/*") || lines.get(startPos).trim().startsWith("*")
-						|| IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) > indentedSpaceCount + 4)) {
+						|| IndentSpaceParser.getIndentSpacesCount(lines.get(startPos)) != indentedSpaceCount + 4)) {
 			statementBuilder.append(removeSingleLineComment(lines.get(startPos)));
 			startPos++;
 		}
@@ -368,11 +422,12 @@ public class TaskExecutor {
 			statementBuilder.append(removeSingleLineComment(lines.get(bodyLineCounter)));
 			bodyLineCounter++;
 
-			while (bodyLineCounter < totalLines && (lines.get(bodyLineCounter).trim().startsWith("//")
+			while (bodyLineCounter < totalLines && !lines.get(bodyLineCounter).trim().startsWith("}") && (lines
+					.get(bodyLineCounter).trim().startsWith("//")
 					|| StringUtils.isEmpty(lines.get(bodyLineCounter).trim())
 					|| lines.get(bodyLineCounter).trim().startsWith("/*")
 					|| lines.get(bodyLineCounter).trim().startsWith("*")
-					|| IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) > indentedSpaceCount + 4)) {
+					|| IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) != indentedSpaceCount + 4)) {
 				statementBuilder.append(removeSingleLineComment(lines.get(bodyLineCounter)));
 				bodyLineCounter++;
 			}
@@ -815,6 +870,7 @@ public class TaskExecutor {
 				codeBuilder.append(line);
 				codeBuilder.append("\n");
 			}
+			System.out.println(codeBuilder.toString());
 			String formattedUpdatedCode = gooleFormatter.formatSource(codeBuilder.toString());
 			saveUpdatedCode(formattedUpdatedCode, inputFilePath);
 
