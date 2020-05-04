@@ -832,7 +832,7 @@ public class TaskExecutor {
 //				
 			if (lines.get(i).trim().startsWith(Keywords.IF)) {
 				i = processIfElseifElse(lines, updatedLines, i, totalLines);
-			} else if (lines.get(i).trim().matches("^(final )?\\w+ [\\w_]+\\;$")) {
+			} else if (lines.get(i).trim().matches("^(final )?\\w+ [\\w_]+\\;.*")) {
 				updatedLines.add(processInitializationStatement(lines.get(i)));
 			} else {
 				updatedLines.add(lines.get(i));
