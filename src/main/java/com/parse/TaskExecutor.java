@@ -804,10 +804,11 @@ public class TaskExecutor {
 			case "double":
 				value = "0d";
 				break;
-			default:
-				value = "null";
 			}
 
+			if (StringUtils.isBlank(value) && Character.isUpperCase(dataType.charAt(0))) {
+				value = "null";
+			}
 			if (StringUtils.isNotBlank(value)) {
 				return StringUtils.join(dataType, " ", matcher.group(3), "=", value, ";");
 			}
