@@ -80,7 +80,10 @@ public class TaskExecutor {
 			updatedLines.add("{");
 			updatedLines.add(spaces + predicateInfo.getVarInitializationStatement());
 			updatedLines.add(spaces + predicateInfo.getInitializationStatement());
-			updatedLines.add(spaces + predicateInfo.getParentStatement());
+			updatedLines.addAll(Arrays.asList("boolean START_" + predicateInfo.getId() + "=true;", "while(true) {",
+					"if(START_" + predicateInfo.getId() + ") {", "START_" + predicateInfo.getId() + "= false;",
+					"}else {", predicateInfo.getVarChangeStatement(), predicateInfo.getReuseStatement(), "}",
+					predicateInfo.getParentStatement()));
 		} else {
 			updatedLines.add(spaces + statement);
 			return startPos - 1;
@@ -101,10 +104,7 @@ public class TaskExecutor {
 		}
 
 		updatedLines.addAll(process(innerBodyLines));
-		if (predicateInfo != null) {
-			updatedLines.add(spaces + "\t" + predicateInfo.getVarChangeStatement());
-			updatedLines.add(spaces + "\t" + predicateInfo.getReuseStatement());
-		}
+		updatedLines.addAll(Arrays.asList("}else {", "break;", "}"));
 
 		if (bodyLineCounter < totalLines
 				&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) == indentedSpaceCount
@@ -152,7 +152,9 @@ public class TaskExecutor {
 		if (predicateInfo != null) {
 			predicateInfoList.add(predicateInfo);
 			updatedLines.add(spaces + predicateInfo.getInitializationStatement());
-			updatedLines.add(spaces + predicateInfo.getParentStatement());
+			updatedLines.addAll(Arrays.asList("boolean START_" + predicateInfo.getId() + "=true;", "while(true) {",
+					"if(START_" + predicateInfo.getId() + ") {", "START_" + predicateInfo.getId() + "= false;",
+					"}else {", predicateInfo.getReuseStatement(), "}", predicateInfo.getParentStatement()));
 		} else {
 			updatedLines.add(spaces + statement);
 			return startPos - 1;
@@ -173,9 +175,7 @@ public class TaskExecutor {
 		}
 
 		updatedLines.addAll(process(innerBodyLines));
-		if (predicateInfo != null) {
-			updatedLines.add(spaces + "\t" + predicateInfo.getReuseStatement());
-		}
+		updatedLines.addAll(Arrays.asList("}else {", "break;", "}"));
 
 		if (bodyLineCounter < totalLines
 				&& IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) == indentedSpaceCount
@@ -200,10 +200,8 @@ public class TaskExecutor {
 	 */
 	private static int processDoWhileLoop(List<String> lines, List<String> updatedLines, int startPos, int totalLines) {
 
-		int pos = updatedLines.size();
 		String spaces = IndentSpaceParser.getIndentSpaces(lines.get(startPos));
 		int indentedSpaceCount = IndentSpaceParser.getIndentSpacesCount(lines.get(startPos));
-		updatedLines.add(lines.get(startPos));
 
 		List<String> innerBodyLines = new ArrayList<>();
 		int bodyLineCounter = startPos + 1;
@@ -218,8 +216,6 @@ public class TaskExecutor {
 			}
 			bodyLineCounter++;
 		}
-
-		updatedLines.addAll(process(innerBodyLines));
 
 		// The statement might be present in multiple lines, thus merging all
 		StringBuilder statementBuilder = new StringBuilder();
@@ -236,15 +232,21 @@ public class TaskExecutor {
 
 		String statement = removeMultilineComment(statementBuilder.toString());
 		PredicateInfo predicateInfo = PredicateParser.processDoWhileStatement(statement);
+
 		if (predicateInfo != null) {
 			predicateInfoList.add(predicateInfo);
-			updatedLines.add(spaces + "\t" + predicateInfo.getReuseStatement());
-			updatedLines.add(spaces + predicateInfo.getParentStatement());
+			updatedLines.add(spaces + predicateInfo.getInitializationStatement());
+			updatedLines.addAll(Arrays.asList("boolean START_" + predicateInfo.getId() + "=true;", "while(true) {",
+					"if(START_" + predicateInfo.getId() + ") {", "START_" + predicateInfo.getId() + "= false;",
+					"}else {", predicateInfo.getReuseStatement(), "}", predicateInfo.getParentStatement()));
 		} else {
 			updatedLines.add(spaces + statement);
 			return bodyLineCounter - 1;
 		}
-		updatedLines.add(pos, spaces + predicateInfo.getInitializationStatement());
+
+		updatedLines.addAll(process(innerBodyLines));
+		updatedLines.addAll(Arrays.asList("}else {", "break;", "}", "}"));
+
 		return bodyLineCounter - 1;
 	}
 
@@ -822,15 +824,13 @@ public class TaskExecutor {
 		int totalLines = lines.size();
 
 		for (int i = 0; i < totalLines; i++) {
-//			if (lines.get(i).trim().startsWith(Keywords.FOR)) {
-//				i = processForLoop(lines, updatedLines, i, totalLines);
-//			} else if (lines.get(i).trim().startsWith(Keywords.WHILE)) {
-//				i = processWhileLoop(lines, updatedLines, i, totalLines);
-//			} else if (lines.get(i).trim().startsWith(Keywords.DO)) {
-//				i = processDoWhileLoop(lines, updatedLines, i, totalLines);
-//			} else 
-//				
-			if (lines.get(i).trim().startsWith(Keywords.IF)) {
+			if (lines.get(i).trim().startsWith(Keywords.FOR)) {
+				i = processForLoop(lines, updatedLines, i, totalLines);
+			} else if (lines.get(i).trim().startsWith(Keywords.WHILE)) {
+				i = processWhileLoop(lines, updatedLines, i, totalLines);
+			} else if (lines.get(i).trim().startsWith(Keywords.DO)) {
+				i = processDoWhileLoop(lines, updatedLines, i, totalLines);
+			} else if (lines.get(i).trim().startsWith(Keywords.IF)) {
 				i = processIfElseifElse(lines, updatedLines, i, totalLines);
 			} else if (lines.get(i).trim().matches("^(final )?\\w+ [\\w_]+\\;.*")) {
 				updatedLines.add(processInitializationStatement(lines.get(i)));
@@ -878,6 +878,7 @@ public class TaskExecutor {
 				codeBuilder.append(line);
 				codeBuilder.append("\n");
 			}
+			System.out.println(codeBuilder.toString());
 			String formattedUpdatedCode = gooleFormatter.formatSource(codeBuilder.toString());
 			saveUpdatedCode(formattedUpdatedCode, inputFilePath);
 

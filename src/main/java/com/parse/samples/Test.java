@@ -1,17 +1,22 @@
 package com.parse.samples;
 
 public class Test {
-	public static void main(String[] args) {
+  public static void main(String[] args) {
 
-		int[][] a = new int[2][2];
-		try {
-			try {
-				System.out.println(a[3][0]);
-			} catch (Exception arrayIndexOutOfBoundsException) {
-
-			}
-		} catch (IllegalArgumentException arrayIndexOutOfBoundsException) {
-
-		}
-	}
+    int i = 0;
+    boolean P_0 = true;
+    boolean START_0 = true;
+    while (true) {
+      if (START_0) {
+        START_0 = false;
+      } else {
+        P_0 = i++ < 10;
+      }
+      if (P_0) {
+        System.out.println("cool");
+      } else {
+        break;
+      }
+    }
+  }
 }

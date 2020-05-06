@@ -6,6 +6,11 @@ package com.parse.models;
 public class PredicateInfo {
 
 	/**
+	 * The predicate ID
+	 */
+	private Integer id;
+
+	/**
 	 * The predicate name
 	 */
 	private String name;
@@ -45,10 +50,11 @@ public class PredicateInfo {
 	 */
 	private String varChangeStatement;
 
-	public PredicateInfo(String name, String control, String type, String initializationStatement,
+	public PredicateInfo(Integer id, String name, String control, String type, String initializationStatement,
 			String reuseStatement, String parentStatement, String varInitializationStatement,
 			String varChangeStatement) {
 		super();
+		this.id = id;
 		this.name = name;
 		this.control = control;
 		this.type = type;
@@ -57,6 +63,14 @@ public class PredicateInfo {
 		this.parentStatement = parentStatement;
 		this.varInitializationStatement = varInitializationStatement;
 		this.varChangeStatement = varChangeStatement;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
 	}
 
 	public String getName() {
