@@ -94,7 +94,7 @@ public class TaskExecutor {
 		while (bodyLineCounter < totalLines) {
 			String line = lines.get(bodyLineCounter);
 			if (StringUtils.isNotBlank(line.trim())) {
-				if (line.startsWith("//") || IndentSpaceParser.getIndentSpacesCount(line) != indentedSpaceCount) {
+				if (line.startsWith("//") || IndentSpaceParser.getIndentSpacesCount(line) > indentedSpaceCount) {
 					innerBodyLines.add(line);
 				} else {
 					break;
