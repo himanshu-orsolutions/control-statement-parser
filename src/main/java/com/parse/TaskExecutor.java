@@ -200,6 +200,7 @@ public class TaskExecutor {
 	 */
 	private static int processDoWhileLoop(List<String> lines, List<String> updatedLines, int startPos, int totalLines) {
 
+		int pos = startPos;
 		String spaces = IndentSpaceParser.getIndentSpaces(lines.get(startPos));
 		int indentedSpaceCount = IndentSpaceParser.getIndentSpacesCount(lines.get(startPos));
 
@@ -222,10 +223,10 @@ public class TaskExecutor {
 		statementBuilder.append(removeSingleLineComment(lines.get(bodyLineCounter)));
 		bodyLineCounter++;
 
-		while (bodyLineCounter < totalLines && !lines.get(bodyLineCounter).trim().startsWith("}") && (lines
-				.get(bodyLineCounter).trim().startsWith("//") || lines.get(bodyLineCounter).trim().startsWith("/*")
-				|| lines.get(bodyLineCounter).trim().startsWith("*")
-				|| IndentSpaceParser.getIndentSpacesCount(lines.get(bodyLineCounter)) != indentedSpaceCount + 4)) {
+		while (bodyLineCounter < totalLines && !lines.get(bodyLineCounter).trim().endsWith(";")
+				&& (lines.get(bodyLineCounter).trim().startsWith("//")
+						|| lines.get(bodyLineCounter).trim().startsWith("/*")
+						|| lines.get(bodyLineCounter).trim().startsWith("*"))) {
 			statementBuilder.append(removeSingleLineComment(lines.get(bodyLineCounter)));
 			bodyLineCounter++;
 		}
@@ -240,8 +241,8 @@ public class TaskExecutor {
 					"if(START_" + predicateInfo.getId() + ") {", "START_" + predicateInfo.getId() + "= false;",
 					"}else {", predicateInfo.getReuseStatement(), "}", predicateInfo.getParentStatement()));
 		} else {
-			updatedLines.add(spaces + statement);
-			return bodyLineCounter - 1;
+			updatedLines.add(lines.get(pos));
+			return pos;
 		}
 
 		updatedLines.addAll(process(innerBodyLines));
