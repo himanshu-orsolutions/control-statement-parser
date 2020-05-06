@@ -38,7 +38,7 @@ public class TaskExecutor {
 
 	private static JavaFormatter formatter = new JavaFormatter();
 
-	private static final Pattern INITIALIZATION_PATTERN = Pattern.compile("^((final )?(\\w+) ([\\w_]+))\\;.*");
+	private static final Pattern INITIALIZATION_PATTERN = Pattern.compile("^(final )?(\\w+) ([\\w_]+)\\;.*");
 	/**
 	 * The list of predicate information
 	 */
@@ -776,8 +776,9 @@ public class TaskExecutor {
 	private static String processInitializationStatement(String statement) {
 
 		Matcher matcher = INITIALIZATION_PATTERN.matcher(statement.trim());
+		boolean includeFinal = false;
 		if (matcher.find()) {
-			String dataType = matcher.group(3);
+			String dataType = matcher.group(2);
 			String value = "";
 			switch (dataType) {
 			case "int":
@@ -808,9 +809,10 @@ public class TaskExecutor {
 
 			if (StringUtils.isBlank(value) && Character.isUpperCase(dataType.charAt(0))) {
 				value = "null";
+				includeFinal = true;
 			}
 			if (StringUtils.isNotBlank(value)) {
-				return StringUtils.join(matcher.group(1), "=", value, ";");
+				return StringUtils.join(includeFinal ? "final " : "", dataType, " ", matcher.group(3), "=", value, ";");
 			}
 		}
 		return statement;
