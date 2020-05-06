@@ -809,7 +809,9 @@ public class TaskExecutor {
 
 			if (StringUtils.isBlank(value) && Character.isUpperCase(dataType.charAt(0))) {
 				value = "null";
-				includeFinal = true;
+				if (StringUtils.isNotBlank(matcher.group(1))) {
+					includeFinal = true;
+				}
 			}
 			if (StringUtils.isNotBlank(value)) {
 				return StringUtils.join(includeFinal ? "final " : "", dataType, " ", matcher.group(3), "=", value, ";");
