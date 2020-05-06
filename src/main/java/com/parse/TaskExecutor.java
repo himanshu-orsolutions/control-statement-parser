@@ -804,6 +804,8 @@ public class TaskExecutor {
 			case "double":
 				value = "0d";
 				break;
+			default:
+				value = "null";
 			}
 
 			if (StringUtils.isNotBlank(value)) {
