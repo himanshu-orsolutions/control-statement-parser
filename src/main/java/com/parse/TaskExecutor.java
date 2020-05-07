@@ -776,7 +776,6 @@ public class TaskExecutor {
 	private static String processInitializationStatement(String statement) {
 
 		Matcher matcher = INITIALIZATION_PATTERN.matcher(statement.trim());
-		boolean includeFinal = false;
 		if (matcher.find()) {
 			String dataType = matcher.group(2);
 			String value = "";
@@ -807,14 +806,12 @@ public class TaskExecutor {
 				break;
 			}
 
-			if (StringUtils.isBlank(value) && Character.isUpperCase(dataType.charAt(0))) {
+			if (StringUtils.isBlank(value) && StringUtils.isBlank(matcher.group(1))
+					&& Character.isUpperCase(dataType.charAt(0))) {
 				value = "null";
-				if (StringUtils.isNotBlank(matcher.group(1))) {
-					includeFinal = true;
-				}
 			}
 			if (StringUtils.isNotBlank(value)) {
-				return StringUtils.join(includeFinal ? "final " : "", dataType, " ", matcher.group(3), "=", value, ";");
+				return StringUtils.join(dataType, " ", matcher.group(3), "=", value, ";");
 			}
 		}
 		return statement;
