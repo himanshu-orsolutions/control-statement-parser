@@ -778,7 +778,7 @@ public class TaskExecutor {
 	 */
 	private static String processPrimitiveInitializationStatement(String statement) {
 
-		if (statement.contains("throws")) { // Its a method declaration
+		if (statement.contains("throws") || statement.contains("default")) { // Its a method declaration
 			return statement;
 		}
 
