@@ -948,9 +948,9 @@ public class TaskExecutor {
 			} else if (lines.get(i).trim().startsWith(Keywords.IF)) {
 				i = processIfElseifElse(lines, updatedLines, i, totalLines);
 			} else if (lines.get(i).trim()
-					.matches("^(final )?(int|long|short|byte|float|boolean|char|double) \\w+.*\\;$")) {
+					.matches("^(int|long|short|byte|float|boolean|char|double) \\w+.*\\;$")) {
 				updatedLines.add(processPrimitiveInitializationStatement(lines.get(i)));
-			} else if (lines.get(i).trim().matches("^(final )?\\w+ [\\w_]+\\;.*")) {
+			} else if (lines.get(i).trim().matches("^\\w+ [\\w_]+\\;.*")) {
 				updatedLines.add(processNonPrimitiveInitializationStatement(lines.get(i)));
 			} else {
 				updatedLines.add(lines.get(i));
