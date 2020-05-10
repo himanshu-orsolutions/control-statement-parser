@@ -778,7 +778,9 @@ public class TaskExecutor {
 	 */
 	private static String processPrimitiveInitializationStatement(String statement) {
 
-		if (statement.contains("throws") || statement.contains("default")) { // Its a method declaration
+		if (statement.contains("throws") || statement.contains("default") || statement.trim().endsWith(");")) { // Its a
+																												// method
+																												// declaration
 			return statement;
 		}
 
@@ -947,8 +949,7 @@ public class TaskExecutor {
 				i = processDoWhileLoop(lines, updatedLines, i, totalLines);
 			} else if (lines.get(i).trim().startsWith(Keywords.IF)) {
 				i = processIfElseifElse(lines, updatedLines, i, totalLines);
-			} else if (lines.get(i).trim()
-					.matches("^(int|long|short|byte|float|boolean|char|double) \\w+.*\\;$")) {
+			} else if (lines.get(i).trim().matches("^(int|long|short|byte|float|boolean|char|double) \\w+.*\\;$")) {
 				updatedLines.add(processPrimitiveInitializationStatement(lines.get(i)));
 			} else if (lines.get(i).trim().matches("^\\w+ [\\w_]+\\;.*")) {
 				updatedLines.add(processNonPrimitiveInitializationStatement(lines.get(i)));
@@ -996,6 +997,7 @@ public class TaskExecutor {
 				codeBuilder.append(line);
 				codeBuilder.append("\n");
 			}
+			System.out.println(codeBuilder.toString());
 			String formattedUpdatedCode = gooleFormatter.formatSource(codeBuilder.toString());
 			saveUpdatedCode(formattedUpdatedCode, inputFilePath);
 
