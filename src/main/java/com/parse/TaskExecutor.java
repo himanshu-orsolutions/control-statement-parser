@@ -818,7 +818,8 @@ public class TaskExecutor {
 				StringBuilder statementBuilder = new StringBuilder();
 
 				while (counter < totalChars) {
-					if (chars[counter] == ',' || chars[counter] == ';') {
+					if ((chars[counter] == ',' || chars[counter] == ';')
+							&& Character.isJavaIdentifierPart(chars[counter - 1])) {
 						if (!isInitialized) {
 							statementBuilder.append("=");
 							statementBuilder.append(value);
