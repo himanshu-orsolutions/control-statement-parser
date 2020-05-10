@@ -39,6 +39,9 @@ public class TaskExecutor {
 	private static JavaFormatter formatter = new JavaFormatter();
 
 	private static final Pattern INITIALIZATION_PATTERN = Pattern.compile("^(final )?(\\w+) ([\\w_]+)\\;.*");
+
+	private static final Pattern PRIMITIVE_INITIALIZATION_PATTERN = Pattern
+			.compile("^(final )?(int|long|short|byte|float|boolean|char|double)(.*\\;)$");
 	/**
 	 * The list of predicate information
 	 */
@@ -768,16 +771,17 @@ public class TaskExecutor {
 	}
 
 	/**
-	 * Processes the initialization statement
+	 * Processes the primitive variables initialization statement
 	 * 
 	 * @param statement The statement
 	 * @return The initialization statement
 	 */
-	private static String processInitializationStatement(String statement) {
+	private static String processPrimitiveInitializationStatement(String statement) {
 
-		Matcher matcher = INITIALIZATION_PATTERN.matcher(statement.trim());
+		Matcher matcher = PRIMITIVE_INITIALIZATION_PATTERN.matcher(statement.trim());
 		if (matcher.find()) {
-			String dataType = matcher.group(2);
+
+			String dataType = matcher.group(2).trim();
 			String value = "";
 			switch (dataType) {
 			case "int":
@@ -806,8 +810,64 @@ public class TaskExecutor {
 				break;
 			}
 
-			if (StringUtils.isBlank(value) && StringUtils.isBlank(matcher.group(1))
-					&& Character.isUpperCase(dataType.charAt(0))) {
+			if (StringUtils.isNotBlank(value)) {
+				int bracesCount = 0;
+				char[] chars = matcher.group(3).trim().toCharArray();
+				int totalChars = chars.length;
+				int counter = 0;
+				boolean isInitialized = false;
+				StringBuilder statementBuilder = new StringBuilder();
+
+				while (counter < totalChars) {
+					if (chars[counter] == ',' || chars[counter] == ';') {
+						if (!isInitialized) {
+							statementBuilder.append("=");
+							statementBuilder.append(value);
+						}
+						isInitialized = false;
+					} else if (chars[counter] == '=') {
+						isInitialized = true;
+					} else if (chars[counter] == '(') {
+						statementBuilder.append(chars[counter]);
+						bracesCount++;
+						counter++;
+						while (counter < totalChars) {
+							if (chars[counter] == ')') {
+								bracesCount--;
+								if (bracesCount == 0) {
+									break;
+								}
+							} else if (chars[counter] == '(') {
+								bracesCount++;
+							}
+							statementBuilder.append(chars[counter]);
+							counter++;
+						}
+					}
+
+					statementBuilder.append(chars[counter]);
+					counter++;
+				}
+				return StringUtils.join(dataType, " ", statementBuilder.toString());
+			}
+		}
+		return statement;
+	}
+
+	/**
+	 * Processes the non primitive variables initialization statement
+	 * 
+	 * @param statement The statement
+	 * @return The initialization statement
+	 */
+	private static String processNonPrimitiveInitializationStatement(String statement) {
+
+		Matcher matcher = INITIALIZATION_PATTERN.matcher(statement.trim());
+		if (matcher.find()) {
+			String dataType = matcher.group(2);
+			String value = "";
+
+			if (StringUtils.isBlank(matcher.group(1)) && Character.isUpperCase(dataType.charAt(0))) {
 				value = "null";
 			}
 			if (StringUtils.isNotBlank(value)) {
@@ -837,8 +897,10 @@ public class TaskExecutor {
 				i = processDoWhileLoop(lines, updatedLines, i, totalLines);
 			} else if (lines.get(i).trim().startsWith(Keywords.IF)) {
 				i = processIfElseifElse(lines, updatedLines, i, totalLines);
+			} else if (lines.get(i).trim().matches("^(final )?(int|long|short|byte|float|boolean|char|double).*\\;$")) {
+				updatedLines.add(processPrimitiveInitializationStatement(lines.get(i)));
 			} else if (lines.get(i).trim().matches("^(final )?\\w+ [\\w_]+\\;.*")) {
-				updatedLines.add(processInitializationStatement(lines.get(i)));
+				updatedLines.add(processNonPrimitiveInitializationStatement(lines.get(i)));
 			} else {
 				updatedLines.add(lines.get(i));
 			}
