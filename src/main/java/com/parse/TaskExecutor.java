@@ -778,6 +778,10 @@ public class TaskExecutor {
 	 */
 	private static String processPrimitiveInitializationStatement(String statement) {
 
+		if (statement.contains("throws")) { // Its a method declaration
+			return statement;
+		}
+
 		Matcher matcher = PRIMITIVE_INITIALIZATION_PATTERN.matcher(statement.trim());
 		if (matcher.find()) {
 
