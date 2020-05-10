@@ -97,6 +97,9 @@ public class PredicateParser {
 		Matcher matcher = FOR_PATTERN.matcher(statement);
 		if (matcher.find()) {
 			String control = matcher.group(2).trim();
+			if (StringUtils.isBlank(control)) {
+				control = "true";
+			}
 			String predicateName = "P_" + predicateCounter.getAndIncrement();
 			String predicateInitStatement = StringUtils.join("boolean", " ", predicateName, "=", "false", ";");
 			String convertedStatement = StringUtils.join("for(", matcher.group(1), ";", predicateName, "=", control,
