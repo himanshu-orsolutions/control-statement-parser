@@ -1,5 +1,7 @@
 package com.parse.utils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -7,6 +9,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
 import com.parse.models.PredicateInfo;
+import com.parse.models.ProcessedStatementInfo;
 
 /**
  * The utility class PredicateParser. It holds implementations to parse
@@ -18,6 +21,11 @@ public class PredicateParser {
 	 * The atomic predicate counter
 	 */
 	private static AtomicInteger predicateCounter = new AtomicInteger();
+
+	/**
+	 * The atomic boolean counter
+	 */
+	private static AtomicInteger booleanCounter = new AtomicInteger();
 
 	/**
 	 * The if statement pattern
@@ -48,6 +56,93 @@ public class PredicateParser {
 		// Its a utility class. Thus instantiation is not allowed.
 	}
 
+	private static ProcessedStatementInfo processStatement(String statement, Integer predicateId,
+			boolean insertPredicate) {
+
+		ProcessedStatementInfo processedStatementInfo = new ProcessedStatementInfo();
+		char[] chars = statement.toCharArray();
+		int totalChars = chars.length;
+		int counter = 0;
+		int endIndex = -1;
+		StringBuilder statementBuilder = new StringBuilder();
+		List<String> predicates = new ArrayList<>();
+
+		while (counter < totalChars) {
+			if (chars[counter] == '"') {
+				statementBuilder.append(chars[counter++]);
+				while (counter < totalChars) {
+					if (chars[counter] == '"' && chars[counter - 1] != '\\') {
+						statementBuilder.append(chars[counter++]);
+						break;
+					}
+					statementBuilder.append(chars[counter++]);
+				}
+			} else if ((chars[counter] == '|' && chars[counter + 1] == '|')
+					|| (chars[counter] == '&' && chars[counter + 1] == '&')) {
+				insertPredicate = true;
+				endIndex = statementBuilder.length();
+				statementBuilder.append(chars[counter++]);
+				statementBuilder.append(chars[counter++]);
+				StringBuilder subStatementBuilder = new StringBuilder();
+				while (counter < totalChars) {
+					subStatementBuilder.append(chars[counter++]);
+				}
+				ProcessedStatementInfo subdiv = processStatement(subStatementBuilder.toString(), predicateId, true);
+				statementBuilder.append(subdiv.getConvertedStatement());
+				predicates.addAll(subdiv.getPredicates());
+				break;
+			} else if (chars[counter] == '(') {
+				statementBuilder.append(chars[counter++]);
+				int bracesCount = 1;
+				StringBuilder subStatementBuilder = new StringBuilder();
+				while (counter < totalChars) {
+					if (chars[counter] == '"') {
+						subStatementBuilder.append(chars[counter++]);
+						while (counter < totalChars) {
+							if (chars[counter] == '"' && chars[counter - 1] != '\\') {
+								subStatementBuilder.append(chars[counter++]);
+								break;
+							}
+							subStatementBuilder.append(chars[counter++]);
+						}
+					} else if (chars[counter] == '(') {
+						subStatementBuilder.append(chars[counter++]);
+						bracesCount++;
+					} else if (chars[counter] == ')') {
+						bracesCount--;
+						if (bracesCount > 0) {
+							subStatementBuilder.append(chars[counter++]);
+						} else {
+							break;
+						}
+					} else {
+						subStatementBuilder.append(chars[counter++]);
+					}
+				}
+				ProcessedStatementInfo subdiv = processStatement(subStatementBuilder.toString(), predicateId, false);
+				statementBuilder.append(subdiv.getConvertedStatement());
+				subStatementBuilder.append(")");
+				predicates.addAll(subdiv.getPredicates());
+			} else {
+				statementBuilder.append(chars[counter++]);
+			}
+		}
+
+		if (insertPredicate) {
+			String predicate = "P_" + predicateCounter + "_" + booleanCounter.getAndIncrement();
+			if (endIndex == -1) {
+				endIndex = statementBuilder.length();
+			}
+			statementBuilder.insert(endIndex, "))");
+			statementBuilder.insert(0, "(" + predicate + "=" + "(");
+			predicates.add(predicate);
+		}
+		processedStatementInfo.setConvertedStatement(statementBuilder.toString());
+		processedStatementInfo.setPredicates(predicates);
+		processedStatementInfo.setPredicateStatement("");
+		return processedStatementInfo;
+	}
+
 	/**
 	 * Processes the 'if' statement
 	 * 
@@ -59,10 +154,18 @@ public class PredicateParser {
 		Matcher matcher = IF_PATTERN.matcher(statement);
 		if (matcher.find()) {
 			String control = matcher.group(2).trim();
-			String predicateName = "P_" + predicateCounter.getAndIncrement();
-			String predicateInitStatement = StringUtils.join("boolean", " ", predicateName, "=", "false", ";");
-			String convertedStatement = StringUtils.join("if(", predicateName, "=", control, ")", "{");
-			return new PredicateInfo(predicateName, "IF", control, predicateInitStatement, convertedStatement);
+			Integer counter = predicateCounter.getAndIncrement();
+			ProcessedStatementInfo processedStatementInfo = processStatement(control, counter, true);
+			String predicateName = "P_" + counter;
+			StringBuilder predicateInitStatementBuilder = new StringBuilder();
+			for (String predicate : processedStatementInfo.getPredicates()) {
+				predicateInitStatementBuilder.append(StringUtils.join("boolean", " ", predicate, "=", "false", ";"));
+			}
+
+			String convertedStatement = StringUtils.join("if(", processedStatementInfo.getConvertedStatement(), ")",
+					"{");
+			return new PredicateInfo(predicateName, "IF", predicateInitStatementBuilder.toString(),
+					predicateInitStatementBuilder.toString(), convertedStatement);
 		}
 		return null;
 	}
