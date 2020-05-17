@@ -516,7 +516,6 @@ public class TaskExecutor {
 			}
 			bodyLineCounter++;
 		}
-		updatedLines.addAll(process(innerBodyLines));
 
 		// The statement might be present in multiple lines, thus merging all
 		StringBuilder statementBuilder = new StringBuilder();
@@ -536,10 +535,11 @@ public class TaskExecutor {
 
 		if (predicateInfo != null) {
 			predicateInfoList.add(predicateInfo);
+			updatedLines.addAll(process(innerBodyLines));
 			updatedLines.add(pos++, predicateInfo.getPredicateInitStatement());
 			updatedLines.add(predicateInfo.getConvertedStatement());
 		} else {
-			return startPos + 1;
+			return startPos;
 		}
 
 		return bodyLineCounter - 1;
@@ -608,6 +608,7 @@ public class TaskExecutor {
 				codeBuilder.append(line);
 				codeBuilder.append("\n");
 			}
+			System.out.println(codeBuilder.toString());
 			String formattedUpdatedCode = gooleFormatter.formatSource(codeBuilder.toString());
 			saveUpdatedCode(formattedUpdatedCode, inputFilePath);
 
