@@ -252,12 +252,10 @@ public class PredicateParser {
 		Matcher matcher = DO_WHILE_PATTERN.matcher(statement);
 		if (matcher.find()) {
 			String control = matcher.group(2).trim();
-			if (!StringUtils.equals("true", control)) {
-				String predicateName = "P_" + predicateCounter.getAndIncrement();
-				String predicateInitStatement = StringUtils.join("boolean", " ", predicateName, "=", "false", ";");
-				String convertedStatement = StringUtils.join("} while(", predicateName, "=", control, ")", ";");
-				return new PredicateInfo(predicateName, "WHILE", control, predicateInitStatement, convertedStatement);
-			}
+			String predicateName = "P_" + predicateCounter.getAndIncrement();
+			String predicateInitStatement = StringUtils.join("boolean", " ", predicateName, "=", "false", ";");
+			String convertedStatement = StringUtils.join("} while(", predicateName, "=", control, ")", ";");
+			return new PredicateInfo(predicateName, "WHILE", control, predicateInitStatement, convertedStatement);
 		}
 		return null;
 	}
