@@ -150,6 +150,11 @@ public class TaskExecutor {
 			predicateInfoList.add(predicateInfo);
 			updatedLines.add(predicateInfo.getPredicateInitStatement());
 			updatedLines.add(predicateInfo.getConvertedStatement());
+		}else {
+			updatedLines.add(spaces + statement);
+			if (!statement.trim().endsWith("{")) {
+				updatedLines.add("{");
+			}
 		}
 		List<String> innerBodyLines = new ArrayList<>();
 		int bodyLineCounter = startPos;
@@ -230,6 +235,11 @@ public class TaskExecutor {
 				predicateInfoList.add(predicateInfo);
 				updatedLines.add(pos++, predicateInfo.getPredicateInitStatement());
 				updatedLines.add(predicateInfo.getConvertedStatement());
+			}else {
+				updatedLines.add(spaces + statement);
+				if (!statement.trim().endsWith("{")) {
+					updatedLines.add("{");
+				}
 			}
 
 			List<String> innerBodyLines = new ArrayList<>();
@@ -390,7 +400,9 @@ public class TaskExecutor {
 			updatedLines.add(predicateInfo.getConvertedStatement());
 		} else {
 			updatedLines.add(spaces + statement);
-			return startPos - 1;
+			if (!statement.trim().endsWith("{")) {
+				updatedLines.add("{");
+			}
 		}
 
 		List<String> innerBodyLines = new ArrayList<>();
@@ -457,7 +469,9 @@ public class TaskExecutor {
 			updatedLines.add(predicateInfo.getConvertedStatement());
 		} else {
 			updatedLines.add(spaces + statement);
-			return startPos - 1;
+			if (!statement.trim().endsWith("{")) {
+				updatedLines.add("{");
+			}
 		}
 
 		List<String> innerBodyLines = new ArrayList<>();

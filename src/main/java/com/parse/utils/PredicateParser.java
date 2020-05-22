@@ -77,6 +77,15 @@ public class PredicateParser {
 					}
 					statementBuilder.append(chars[counter++]);
 				}
+			} else if (chars[counter] == '\'') {
+				statementBuilder.append(chars[counter++]);
+				while (counter < totalChars) {
+					if (chars[counter] == '\'' && chars[counter - 1] != '\\') {
+						statementBuilder.append(chars[counter++]);
+						break;
+					}
+					statementBuilder.append(chars[counter++]);
+				}
 			} else if ((chars[counter] == '|' && chars[counter + 1] == '|')
 					|| (chars[counter] == '&' && chars[counter + 1] == '&')) {
 				insertPredicate = true;
@@ -100,6 +109,15 @@ public class PredicateParser {
 						subStatementBuilder.append(chars[counter++]);
 						while (counter < totalChars) {
 							if (chars[counter] == '"' && chars[counter - 1] != '\\') {
+								subStatementBuilder.append(chars[counter++]);
+								break;
+							}
+							subStatementBuilder.append(chars[counter++]);
+						}
+					} else if (chars[counter] == '\'') {
+						subStatementBuilder.append(chars[counter++]);
+						while (counter < totalChars) {
+							if (chars[counter] == '\'' && chars[counter - 1] != '\\') {
 								subStatementBuilder.append(chars[counter++]);
 								break;
 							}
