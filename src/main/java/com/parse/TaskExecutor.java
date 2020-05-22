@@ -135,14 +135,16 @@ public class TaskExecutor {
 		statementBuilder.append(removeSingleLineComment(lines.get(startPos)));
 		startPos++;
 
-		String codeline = lines.get(startPos);
-		while (startPos < totalLines && (StringUtils.isBlank(codeline)
-				|| (!codeline.trim().startsWith("}") && (codeline.trim().startsWith("//")
-						|| codeline.trim().startsWith("/*") || codeline.trim().startsWith("*")
-						|| IndentSpaceParser.getIndentSpacesCount(codeline) > indentedSpaceCount + 4)))) {
-			statementBuilder.append(removeSingleLineComment(codeline));
-			startPos++;
-			codeline = lines.get(startPos);
+		if (startPos < totalLines) {
+			String codeline = lines.get(startPos);
+			while (startPos < totalLines && (StringUtils.isBlank(codeline)
+					|| (!codeline.trim().startsWith("}") && (codeline.trim().startsWith("//")
+							|| codeline.trim().startsWith("/*") || codeline.trim().startsWith("*")
+							|| IndentSpaceParser.getIndentSpacesCount(codeline) != indentedSpaceCount + 4)))) {
+				statementBuilder.append(removeSingleLineComment(codeline));
+				startPos++;
+				codeline = lines.get(startPos);
+			}
 		}
 
 		String statement = removeMultilineComment(statementBuilder.toString());
@@ -220,14 +222,17 @@ public class TaskExecutor {
 			statementBuilder.append(removeSingleLineComment(lines.get(bodyLineCounter)));
 			bodyLineCounter++;
 
-			String codeline = lines.get(bodyLineCounter);
-			while (bodyLineCounter < totalLines && (StringUtils.isEmpty(codeline) || (!codeline.trim().startsWith("}")
-					&& (codeline.trim().startsWith("//") || StringUtils.isEmpty(codeline.trim())
-							|| codeline.trim().startsWith("/*") || codeline.trim().startsWith("*")
-							|| IndentSpaceParser.getIndentSpacesCount(codeline) != indentedSpaceCount + 4)))) {
-				statementBuilder.append(removeSingleLineComment(codeline));
-				bodyLineCounter++;
-				codeline = lines.get(bodyLineCounter);
+			if (bodyLineCounter < totalLines) {
+				String codeline = lines.get(bodyLineCounter);
+				while (bodyLineCounter < totalLines && (StringUtils.isEmpty(codeline)
+						|| (!codeline.trim().startsWith("}") && (codeline.trim().startsWith("//")
+								|| StringUtils.isEmpty(codeline.trim()) || codeline.trim().startsWith("/*")
+								|| codeline.trim().startsWith("*")
+								|| IndentSpaceParser.getIndentSpacesCount(codeline) != indentedSpaceCount + 4)))) {
+					statementBuilder.append(removeSingleLineComment(codeline));
+					bodyLineCounter++;
+					codeline = lines.get(bodyLineCounter);
+				}
 			}
 
 			String statement = removeMultilineComment(statementBuilder.toString());
@@ -385,14 +390,16 @@ public class TaskExecutor {
 		statementBuilder.append(removeSingleLineComment(lines.get(startPos)));
 		startPos++;
 
-		String codeline = lines.get(startPos);
-		while (startPos < totalLines && (StringUtils.isBlank(codeline)
-				|| (!codeline.trim().startsWith("}") && (codeline.trim().startsWith("//")
-						|| codeline.trim().startsWith("/*") || codeline.trim().startsWith("*")
-						|| IndentSpaceParser.getIndentSpacesCount(codeline) > indentedSpaceCount + 4)))) {
-			statementBuilder.append(removeSingleLineComment(codeline));
-			startPos++;
-			codeline = lines.get(startPos);
+		if (startPos < totalLines) {
+			String codeline = lines.get(startPos);
+			while (startPos < totalLines && (StringUtils.isBlank(codeline)
+					|| (!codeline.trim().startsWith("}") && (codeline.trim().startsWith("//")
+							|| codeline.trim().startsWith("/*") || codeline.trim().startsWith("*")
+							|| IndentSpaceParser.getIndentSpacesCount(codeline) != indentedSpaceCount + 4)))) {
+				statementBuilder.append(removeSingleLineComment(codeline));
+				startPos++;
+				codeline = lines.get(startPos);
+			}
 		}
 
 		String statement = removeMultilineComment(statementBuilder.toString());
@@ -456,14 +463,16 @@ public class TaskExecutor {
 		statementBuilder.append(removeSingleLineComment(lines.get(startPos)));
 		startPos++;
 
-		String codeline = lines.get(startPos);
-		while (startPos < totalLines && (StringUtils.isBlank(codeline)
-				|| (!codeline.trim().startsWith("}") && (codeline.trim().startsWith("//")
-						|| codeline.trim().startsWith("/*") || codeline.trim().startsWith("*")
-						|| IndentSpaceParser.getIndentSpacesCount(codeline) > indentedSpaceCount + 4)))) {
-			statementBuilder.append(removeSingleLineComment(codeline));
-			startPos++;
-			codeline = lines.get(startPos);
+		if (startPos < totalLines) {
+			String codeline = lines.get(startPos);
+			while (startPos < totalLines && (StringUtils.isBlank(codeline)
+					|| (!codeline.trim().startsWith("}") && (codeline.trim().startsWith("//")
+							|| codeline.trim().startsWith("/*") || codeline.trim().startsWith("*")
+							|| IndentSpaceParser.getIndentSpacesCount(codeline) != indentedSpaceCount + 4)))) {
+				statementBuilder.append(removeSingleLineComment(codeline));
+				startPos++;
+				codeline = lines.get(startPos);
+			}
 		}
 
 		String statement = removeMultilineComment(statementBuilder.toString());
@@ -542,13 +551,15 @@ public class TaskExecutor {
 		statementBuilder.append(removeSingleLineComment(lines.get(bodyLineCounter)));
 		bodyLineCounter++;
 
-		String codeline = lines.get(bodyLineCounter);
-		while (bodyLineCounter < totalLines && (StringUtils.isBlank(codeline)
-				|| (!codeline.trim().endsWith(";") && (codeline.trim().startsWith("//")
-						|| codeline.trim().startsWith("/*") || codeline.trim().startsWith("*"))))) {
-			statementBuilder.append(removeSingleLineComment(codeline));
-			bodyLineCounter++;
-			codeline = lines.get(bodyLineCounter);
+		if (bodyLineCounter < totalLines) {
+			String codeline = lines.get(bodyLineCounter);
+			while (bodyLineCounter < totalLines && (StringUtils.isBlank(codeline)
+					|| (!codeline.trim().endsWith(";") && (codeline.trim().startsWith("//")
+							|| codeline.trim().startsWith("/*") || codeline.trim().startsWith("*"))))) {
+				statementBuilder.append(removeSingleLineComment(codeline));
+				bodyLineCounter++;
+				codeline = lines.get(bodyLineCounter);
+			}
 		}
 
 		String statement = removeMultilineComment(statementBuilder.toString());
@@ -629,6 +640,7 @@ public class TaskExecutor {
 				codeBuilder.append(line);
 				codeBuilder.append("\n");
 			}
+			System.out.println(codeBuilder.toString());
 			String formattedUpdatedCode = gooleFormatter.formatSource(codeBuilder.toString());
 			saveUpdatedCode(formattedUpdatedCode, inputFilePath);
 
