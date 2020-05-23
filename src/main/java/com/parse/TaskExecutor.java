@@ -646,7 +646,7 @@ public class TaskExecutor {
 			// Creating the predicates file
 			PredicateRecorder.create(inputFilePath, outputPath, predicateInfoList);
 			System.out.println("COMPLETED.");
-		} catch (IOException | FormatterException exception) {
+		} catch (Exception exception) {
 			System.out.println("Error formatting the code. File: " + inputFilePath.toString() + ", Reason: "
 					+ exception.getLocalizedMessage());
 		}
