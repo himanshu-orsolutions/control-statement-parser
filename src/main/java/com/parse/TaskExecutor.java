@@ -15,7 +15,6 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.googlejavaformat.java.Formatter;
-import com.google.googlejavaformat.java.FormatterException;
 import com.google.googlejavaformat.java.JavaFormatterOptions;
 import com.google.googlejavaformat.java.JavaFormatterOptions.Style;
 import com.parse.constants.Keywords;
