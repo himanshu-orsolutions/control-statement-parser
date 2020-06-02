@@ -147,7 +147,7 @@ public class PredicateParser {
 		}
 
 		if (insertPredicate) {
-			String predicate = "P_" + predicateId + "_" + booleanCounter.getAndIncrement();
+			String predicate = "P" + predicateId + "_" + booleanCounter.getAndIncrement();
 			if (endIndex == -1) {
 				endIndex = statementBuilder.length();
 			}
@@ -176,7 +176,7 @@ public class PredicateParser {
 				Integer counter = predicateCounter.getAndIncrement();
 				booleanCounter = new AtomicInteger();
 				ProcessedStatementInfo processedStatementInfo = processStatement(control, counter, true);
-				String predicateName = "P_" + counter;
+				String predicateName = "P" + counter;
 				StringBuilder predicateInitStatementBuilder = new StringBuilder();
 				for (String predicate : processedStatementInfo.getPredicates()) {
 					predicateInitStatementBuilder
@@ -207,7 +207,7 @@ public class PredicateParser {
 				Integer counter = predicateCounter.getAndIncrement();
 				booleanCounter = new AtomicInteger();
 				ProcessedStatementInfo processedStatementInfo = processStatement(control, counter, true);
-				String predicateName = "P_" + counter;
+				String predicateName = "P" + counter;
 				StringBuilder predicateInitStatementBuilder = new StringBuilder();
 				for (String predicate : processedStatementInfo.getPredicates()) {
 					predicateInitStatementBuilder
@@ -239,7 +239,7 @@ public class PredicateParser {
 				Integer counter = predicateCounter.getAndIncrement();
 				booleanCounter = new AtomicInteger();
 				ProcessedStatementInfo processedStatementInfo = processStatement(control, counter, true);
-				String predicateName = "P_" + counter;
+				String predicateName = "P" + counter;
 				StringBuilder predicateInitStatementBuilder = new StringBuilder();
 				for (String predicate : processedStatementInfo.getPredicates()) {
 					predicateInitStatementBuilder
@@ -270,7 +270,7 @@ public class PredicateParser {
 				Integer counter = predicateCounter.getAndIncrement();
 				booleanCounter = new AtomicInteger();
 				ProcessedStatementInfo processedStatementInfo = processStatement(control, counter, true);
-				String predicateName = "P_" + counter;
+				String predicateName = "P" + counter;
 				StringBuilder predicateInitStatementBuilder = new StringBuilder();
 				for (String predicate : processedStatementInfo.getPredicates()) {
 					predicateInitStatementBuilder
@@ -298,7 +298,7 @@ public class PredicateParser {
 		if (matcher.find()) {
 			String control = matcher.group(2).trim();
 			if (!StringUtils.equals("true", control)) {
-				String predicateName = "P_" + predicateCounter.getAndIncrement();
+				String predicateName = "P" + predicateCounter.getAndIncrement();
 				String predicateInitStatement = StringUtils.join("boolean", " ", predicateName, "=", "false", ";");
 				String convertedStatement = StringUtils.join("} while(", predicateName, "=", control, ")", ";");
 				return new PredicateInfo(predicateName, "DO-WHILE", control, predicateInitStatement, convertedStatement);
